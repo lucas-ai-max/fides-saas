@@ -26,7 +26,11 @@ serve(async (req) => {
 
     // Create new thread
     if (action === 'create_thread') {
-      const thread = await openai.beta.threads.create();
+      console.log('Creating thread with v2 API...');
+      const thread = await openai.beta.threads.create({}, {
+        headers: { 'OpenAI-Beta': 'assistants=v2' }
+      });
+      console.log('Thread created:', thread.id);
       return new Response(JSON.stringify({ threadId: thread.id }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -38,29 +42,42 @@ serve(async (req) => {
         throw new Error('threadId é obrigatório');
       }
 
+      console.log('Sending message to thread:', threadId);
+
       // Add user message
       await openai.beta.threads.messages.create(threadId, {
         role: 'user',
         content: message,
+      }, {
+        headers: { 'OpenAI-Beta': 'assistants=v2' }
       });
 
       // Run assistant
       const run = await openai.beta.threads.runs.create(threadId, {
         assistant_id: assistantId,
+      }, {
+        headers: { 'OpenAI-Beta': 'assistants=v2' }
       });
 
+      console.log('Run created:', run.id);
+
       // Wait for completion
-      let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+      let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id, {
+        headers: { 'OpenAI-Beta': 'assistants=v2' }
+      });
       let attempts = 0;
       const maxAttempts = 60;
 
       while (runStatus.status !== 'completed' && attempts < maxAttempts) {
         if (runStatus.status === 'failed' || runStatus.status === 'cancelled' || runStatus.status === 'expired') {
+          console.error('Run failed:', runStatus.status, runStatus);
           throw new Error(`Run falhou: ${runStatus.status}`);
         }
         
         await new Promise(resolve => setTimeout(resolve, 1000));
-        runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+        runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id, {
+          headers: { 'OpenAI-Beta': 'assistants=v2' }
+        });
         attempts++;
       }
 
@@ -68,8 +85,12 @@ serve(async (req) => {
         throw new Error('Timeout ao aguardar resposta');
       }
 
+      console.log('Run completed, fetching messages...');
+
       // Get messages
-      const messages = await openai.beta.threads.messages.list(threadId);
+      const messages = await openai.beta.threads.messages.list(threadId, {}, {
+        headers: { 'OpenAI-Beta': 'assistants=v2' }
+      });
       const lastMessage = messages.data[0];
 
       if (lastMessage.content[0].type === 'text') {
