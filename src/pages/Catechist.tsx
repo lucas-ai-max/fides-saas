@@ -2,20 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Send, MoreVertical, BookOpen } from "lucide-react";
+import { ArrowLeft, Send, MoreVertical, MessageSquare, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-  threadId?: string;
-  sources?: Array<{
-    type: string;
-    reference: string;
-  }>;
-}
+import { conversationService, Conversation, Message } from "@/services/conversationService";
+import ConversationHistory from "@/components/ConversationHistory";
 
 const Catechist = () => {
   const navigate = useNavigate();
@@ -29,7 +19,13 @@ const Catechist = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const quickQuestions = [
     "O que é a Eucaristia?",
@@ -45,6 +41,27 @@ const Catechist = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const loadedConversations = conversationService.getConversations();
+    setConversations(loadedConversations);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -63,15 +80,11 @@ const Catechist = () => {
 
     try {
       const { supabase } = await import("@/integrations/supabase/client");
-      
-      // Get the last threadId from messages if exists
-      const lastAssistantMessage = messages.filter(m => m.role === "assistant").pop();
-      const threadId = (lastAssistantMessage as any)?.threadId;
 
       const { data, error } = await supabase.functions.invoke('chat-catechist', {
         body: { 
           message: messageToSend,
-          threadId 
+          threadId: currentThreadId 
         }
       });
 
@@ -79,16 +92,31 @@ const Catechist = () => {
         throw error;
       }
 
-      const assistantMessage: Message & { threadId?: string; sources?: Array<{ type: string; reference: string }> } = {
+      const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: data.content,
         timestamp: new Date(),
-        threadId: data.threadId,
         sources: data.sources
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Salva ou atualiza a conversa
+      const newThreadId = data.threadId;
+      setCurrentThreadId(newThreadId);
+
+      if (!currentConversation) {
+        const newConv = conversationService.createNewConversation(messageToSend, newThreadId);
+        conversationService.addMessages(newConv.id, userMessage, assistantMessage);
+        setCurrentConversation(newConv);
+        setConversations(conversationService.getConversations());
+      } else {
+        conversationService.addMessages(currentConversation.id, userMessage, assistantMessage);
+        setConversations(conversationService.getConversations());
+        const updated = conversationService.getConversation(currentConversation.id);
+        setCurrentConversation(updated);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
@@ -100,6 +128,55 @@ const Catechist = () => {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleNewConversation = () => {
+    setCurrentConversation(null);
+    setCurrentThreadId(null);
+    setMessages([
+      {
+        id: "1",
+        role: "assistant",
+        content: "Olá! Sou o Catequista, alimentado pela sabedoria do Catecismo, Bíblia e ensinamentos dos Santos. Como posso ajudar você hoje?",
+        timestamp: new Date()
+      }
+    ]);
+    setShowMenu(false);
+  };
+
+  const handleSelectConversation = (conversationId: string) => {
+    const conversation = conversationService.getConversation(conversationId);
+    if (!conversation) return;
+
+    const introMessage: Message = {
+      id: "intro",
+      role: "assistant",
+      content: "Olá! Sou o Catequista, alimentado pela sabedoria do Catecismo, Bíblia e ensinamentos dos Santos. Como posso ajudar você hoje?",
+      timestamp: new Date()
+    };
+
+    setMessages([introMessage, ...conversation.messages]);
+    setCurrentConversation(conversation);
+    setCurrentThreadId(conversation.threadId);
+  };
+
+  const handleDeleteConversation = (conversationId: string) => {
+    conversationService.deleteConversation(conversationId);
+    setConversations(conversationService.getConversations());
+
+    if (currentConversation?.id === conversationId) {
+      handleNewConversation();
+    }
+  };
+
+  const handleRenameConversation = (conversationId: string, newTitle: string) => {
+    conversationService.renameConversation(conversationId, newTitle);
+    setConversations(conversationService.getConversations());
+
+    if (currentConversation?.id === conversationId) {
+      const updated = conversationService.getConversation(conversationId);
+      setCurrentConversation(updated);
     }
   };
 
@@ -123,13 +200,48 @@ const Catechist = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-heading font-semibold text-primary">
-            Catequista
-          </h1>
+          <div className="flex-1">
+            <h1 className="text-xl font-heading font-semibold text-primary">
+              {currentConversation?.title || 'Catequista'}
+            </h1>
+            {currentConversation && (
+              <p className="text-xs text-muted-foreground">
+                {currentConversation.messageCount} mensagens
+              </p>
+            )}
+          </div>
         </div>
-        <Button variant="ghost" size="icon">
-          <MoreVertical className="h-5 w-5" />
-        </Button>
+        <div className="relative" ref={menuRef}>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setShowMenu(!showMenu)}
+          >
+            <MoreVertical className="h-5 w-5" />
+          </Button>
+          
+          {showMenu && (
+            <div className="absolute right-0 mt-2 w-56 bg-card rounded-lg shadow-xl border border-border z-10 overflow-hidden">
+              <button
+                onClick={handleNewConversation}
+                className="w-full text-left px-4 py-3 hover:bg-accent transition-colors text-sm flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Nova conversa</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowHistory(true);
+                  setShowMenu(false);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-accent transition-colors text-sm flex items-center gap-2 border-t border-border"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Histórico de conversas</span>
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Messages */}
@@ -256,6 +368,18 @@ const Catechist = () => {
           </Button>
         </div>
       </div>
+
+      {/* Modal de Histórico */}
+      {showHistory && (
+        <ConversationHistory
+          conversations={conversations}
+          currentConversationId={currentConversation?.id || null}
+          onSelectConversation={handleSelectConversation}
+          onDeleteConversation={handleDeleteConversation}
+          onRenameConversation={handleRenameConversation}
+          onClose={() => setShowHistory(false)}
+        />
+      )}
     </div>
   );
 };
