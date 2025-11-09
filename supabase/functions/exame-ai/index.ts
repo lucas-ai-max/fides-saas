@@ -17,6 +17,9 @@ serve(async (req) => {
     
     const openai = new OpenAI({
       apiKey: Deno.env.get('OPENAI_API_KEY'),
+      defaultHeaders: {
+        'OpenAI-Beta': 'assistants=v2',
+      },
     });
 
     const assistantId = Deno.env.get('OPENAI_ASSISTANT_ID') || 'asst_iTAdW7kD5VJhGjaUOBf2o1ZD';
