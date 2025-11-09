@@ -7,6 +7,9 @@ import Onboarding from "./pages/Onboarding";
 import Setup from "./pages/Setup";
 import Home from "./pages/Home";
 import Catechist from "./pages/Catechist";
+import Prayers from "./pages/Prayers";
+import PrayerDetail from "./pages/PrayerDetail";
+import PrayNow from "./pages/PrayNow";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,7 +28,9 @@ const App = () => (
           <Route path="/catechist" element={<Catechist />} />
           <Route path="/liturgy" element={<div className="p-6 text-center font-heading text-xl">Liturgia (Em breve)</div>} />
           <Route path="/plans" element={<div className="p-6 text-center font-heading text-xl">Planos (Em breve)</div>} />
-          <Route path="/prayers" element={<div className="p-6 text-center font-heading text-xl">Orações (Em breve)</div>} />
+          <Route path="/prayers" element={<Prayers />} />
+          <Route path="/prayers/:id" element={<PrayerDetail />} />
+          <Route path="/pray/:id" element={<PrayNow />} />
           <Route path="/churches" element={<div className="p-6 text-center font-heading text-xl">Igrejas (Em breve)</div>} />
           <Route path="/examination" element={<div className="p-6 text-center font-heading text-xl">Exame (Em breve)</div>} />
           <Route path="/library" element={<div className="p-6 text-center font-heading text-xl">Biblioteca (Em breve)</div>} />
