@@ -6,6 +6,12 @@ import { exameAIService } from '@/services/exameAI';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
+interface PecadoIdentificado {
+  mandamentoNumero: number;
+  mandamentoTitulo: string;
+  perguntas: string[];
+}
+
 const RealizarExame = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -37,7 +43,23 @@ const RealizarExame = () => {
       setShowAI(false);
       setAiMessages([]);
     } else {
-      navigate('/examination/conclusao');
+      // Coletar pecados identificados
+      const pecadosIdentificados: PecadoIdentificado[] = [];
+      
+      Object.entries(identifications).forEach(([mandamentoId, identificou]) => {
+        if (identificou) {
+          const mandamento = exameData.find(m => m.id === mandamentoId);
+          if (mandamento) {
+            pecadosIdentificados.push({
+              mandamentoNumero: mandamento.numero,
+              mandamentoTitulo: mandamento.mandamento,
+              perguntas: mandamento.questions,
+            });
+          }
+        }
+      });
+
+      navigate('/examination/conclusao', { state: { pecadosIdentificados } });
     }
   };
 
