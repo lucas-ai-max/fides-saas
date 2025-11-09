@@ -66,7 +66,7 @@ All colors MUST be HSL.
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
-    --radius: 1rem;
+    --radius: 0.5rem;
     
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 17%;
@@ -76,6 +76,11 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 210 53% 25%;
     --sidebar-border: 0 0% 90%;
     --sidebar-ring: 42 40% 58%;
+    
+    /* ChatGPT-style dark theme colors - HSL format */
+    --chat-sidebar: 0 0% 9%;
+    --chat-main: 0 0% 13%;
+    --chat-input: 0 0% 18%;
   }
 
   .dark {
