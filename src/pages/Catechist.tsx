@@ -10,6 +10,11 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  threadId?: string;
+  sources?: Array<{
+    type: string;
+    reference: string;
+  }>;
 }
 
 const Catechist = () => {
@@ -52,20 +57,50 @@ const Catechist = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageToSend = input.trim();
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
-      const assistantMessage: Message = {
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      
+      // Get the last threadId from messages if exists
+      const lastAssistantMessage = messages.filter(m => m.role === "assistant").pop();
+      const threadId = (lastAssistantMessage as any)?.threadId;
+
+      const { data, error } = await supabase.functions.invoke('chat-catechist', {
+        body: { 
+          message: messageToSend,
+          threadId 
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const assistantMessage: Message & { threadId?: string; sources?: Array<{ type: string; reference: string }> } = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Esta é uma resposta simulada. Em produção, aqui viria a resposta da API da Anthropic (Claude) treinada com conhecimento católico do Catecismo, Bíblia e Santos.\n\n📖 Catecismo §234: 'O mistério da Santíssima Trindade é o mistério central da fé e da vida cristã...'\n\nVer fonte completa →",
+        content: data.content,
+        timestamp: new Date(),
+        threadId: data.threadId,
+        sources: data.sources
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.",
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleQuickQuestion = (question: string) => {
@@ -132,6 +167,21 @@ const Catechist = () => {
               <p className="font-body text-[15px] leading-relaxed whitespace-pre-wrap">
                 {message.content}
               </p>
+              
+              {message.sources && message.sources.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-accent/20">
+                  {message.sources.map((source, index) => (
+                    <div
+                      key={index}
+                      className="text-sm bg-accent/10 border-l-4 border-accent p-2 rounded mt-2"
+                    >
+                      <span className="mr-2">📖</span>
+                      <span className="text-muted-foreground">{source.reference}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               <p
                 className={`text-xs mt-2 ${
                   message.role === "user"
