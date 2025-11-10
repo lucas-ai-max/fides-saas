@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Menu, Paperclip, ArrowUp } from 'lucide-react';
 import { conversationService, Message, Conversation } from '@/services/conversationService';
 import ConversationSidebar from '@/components/ConversationSidebar';
+import MarkdownMessage from '@/components/MarkdownMessage';
 
 const Catechist = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -239,11 +240,11 @@ const Catechist = () => {
                           {message.role === 'user' ? 'Você' : 'Catequista'}
                         </span>
                       </div>
-                      <div className="prose prose-invert max-w-none">
-                        <p className="text-white/90 leading-relaxed whitespace-pre-wrap font-body text-[15px]">
-                          {message.content}
-                        </p>
-                      </div>
+                      <MarkdownMessage 
+                        content={message.content}
+                        isAssistant={message.role === 'assistant'}
+                        enableTyping={message.role === 'assistant' && messages[messages.length - 1]?.id === message.id}
+                      />
 
                       {/* Sources */}
                       {message.sources && message.sources.length > 0 && (
