@@ -98,7 +98,7 @@ const Home = () => {
         </div>
 
         {/* Liturgia de Hoje */}
-        <Link to="/liturgy">
+        <Link to="/liturgia">
           <Card className="p-6 bg-gradient-to-br from-card to-stone-gray border-l-4 border-l-liturgical-gold shadow-md hover:shadow-lg transition-all cursor-pointer">
             <div className="flex items-start gap-4">
               <BookOpen className="h-6 w-6 text-liturgical-gold flex-shrink-0 mt-1" />
