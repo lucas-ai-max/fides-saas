@@ -19,8 +19,12 @@ import {
   ArrowRight
 } from "lucide-react";
 import { liturgiaService } from "@/services/liturgiaService";
+import { santoService } from "@/services/santoService";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate();
+  
   const [greeting] = useState(() => {
     const hour = new Date().getHours();
     if (hour < 12) return "Bom dia";
@@ -31,6 +35,12 @@ const Home = () => {
   const [liturgiaPreview, setLiturgiaPreview] = useState({
     texto: '',
     referencia: '',
+    loading: true,
+  });
+
+  const [santoPreview, setSantoPreview] = useState({
+    nome: '',
+    titulo: '',
     loading: true,
   });
 
@@ -51,6 +61,22 @@ const Home = () => {
         setLiturgiaPreview({
           texto: 'Não foi possível carregar a liturgia do dia',
           referencia: '',
+          loading: false,
+        });
+      });
+
+    santoService.buscarSantoDoDia()
+      .then((santo) => {
+        setSantoPreview({
+          nome: santo.nome,
+          titulo: santo.titulo,
+          loading: false,
+        });
+      })
+      .catch(() => {
+        setSantoPreview({
+          nome: 'Erro ao carregar',
+          titulo: '',
           loading: false,
         });
       });
@@ -192,26 +218,28 @@ const Home = () => {
         </div>
 
         {/* Santo do Dia */}
-        <Card className="p-6 shadow-md">
-          <div className="space-y-4">
-            <h3 className="font-heading text-xl font-semibold text-primary">
-              👤 Santo do Dia
-            </h3>
-            <div className="flex gap-4">
-              <div className="w-16 h-16 rounded-full bg-accent-light flex items-center justify-center flex-shrink-0">
-                <Users className="h-8 w-8 text-liturgical-gold" />
+        <Card 
+          onClick={() => navigate('/santo')}
+          className="p-5 shadow-md hover:shadow-lg transition-all cursor-pointer"
+        >
+          <div className="flex items-start gap-4">
+            <div className="text-4xl flex-shrink-0">🕊️</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-heading text-xl font-semibold text-primary">Santo do Dia</h3>
+                <ArrowRight className="w-5 h-5 text-accent flex-shrink-0" />
               </div>
-              <div className="space-y-2">
-                <h4 className="font-heading text-lg font-semibold text-primary">
-                  🌟 São Martinho de Tours
-                </h4>
-                <p className="text-sm text-muted-foreground font-body line-clamp-3 leading-relaxed">
-                  Soldado romano que dividiu sua capa com um mendigo. Mais tarde tornou-se bispo e é conhecido por sua humildade e caridade...
-                </p>
-                <Button variant="link" className="p-0 h-auto text-primary hover:text-primary/80">
-                  Conhecer sua vida →
-                </Button>
-              </div>
+              {santoPreview.loading ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Carregando...</span>
+                </div>
+              ) : (
+                <>
+                  <p className="font-heading font-semibold text-foreground mb-1 truncate">{santoPreview.nome}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{santoPreview.titulo}</p>
+                </>
+              )}
             </div>
           </div>
         </Card>
