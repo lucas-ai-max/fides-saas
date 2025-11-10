@@ -86,19 +86,44 @@ class SantoService {
   }
 
   private normalizarDados(dados: any, data: Date): SantoDoDia {
-    const santos = dados.santo;
     let nome = 'Santo do Dia';
     let titulo = '';
     let historia = '';
     
-    if (Array.isArray(santos) && santos.length > 0) {
-      const primeiroSanto = santos[0];
-      nome = primeiroSanto.nome || 'Santo do Dia';
-      titulo = primeiroSanto.titulo || '';
-      historia = primeiroSanto.historia || 'História não disponível no momento.';
-    } else if (typeof santos === 'string') {
-      nome = santos;
-      historia = 'Informação completa não disponível no momento.';
+    // Extrair nome e título do campo "liturgia"
+    if (dados.liturgia && typeof dados.liturgia === 'string') {
+      const textoLiturgia = dados.liturgia;
+      
+      // Remover tipos litúrgicos do final (Memória, Festa, Solenidade, etc)
+      const semTipo = textoLiturgia
+        .replace(/,?\s*(Memória|Festa|Solenidade|Comemoração|Tempo Comum|Tempo Pascal|Advento|Quaresma|semana).*$/i, '')
+        .trim();
+      
+      // Separar nome do título por vírgula
+      const partes = semTipo.split(',').map(p => p.trim());
+      
+      if (partes.length >= 1) {
+        nome = partes[0];
+      }
+      
+      if (partes.length >= 2) {
+        titulo = partes.slice(1).join(', ');
+        // Capitalizar primeira letra do título
+        titulo = titulo.charAt(0).toUpperCase() + titulo.slice(1);
+      }
+      
+      // História: APENAS se a API fornecer no campo específico
+      if (dados.historia && typeof dados.historia === 'string') {
+        historia = dados.historia;
+      } else {
+        // Mensagem honesta quando a API não fornece biografia
+        historia = `${nome} é celebrado hoje pela Igreja Católica. Para conhecer a vida e obra deste santo, consulte fontes oficiais como Vatican News, livros de hagiografia ou o site da CNBB.`;
+      }
+    } else {
+      // Fallback quando não há campo liturgia
+      nome = 'Santo do Dia';
+      titulo = 'Celebração Litúrgica';
+      historia = 'Informação não disponível na API da CNBB no momento. Por favor, tente novamente mais tarde ou consulte fontes oficiais.';
     }
 
     return {
@@ -114,7 +139,7 @@ class SantoService {
       nome,
       titulo,
       historia,
-      oracao: dados.oracoes?.oferendas || dados.oracoes?.comunhao,
+      oracao: dados.oracoes?.coleta || dados.oracoes?.oferendas || dados.oracoes?.comunhao,
       fonte: 'CNBB',
     };
   }
