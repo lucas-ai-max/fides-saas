@@ -14,6 +14,7 @@ import ExameConsciencia from "./pages/ExameConsciencia";
 import RealizarExame from "./pages/RealizarExame";
 import ExameConclusao from "./pages/ExameConclusao";
 import Igrejas from "./pages/Igrejas";
+import IgrejasProximas from "./pages/IgrejasProximas";
 import NotFound from "./pages/NotFound";
 import LiturgiaDiaria from "./pages/LiturgiaDiaria";
 import SantoDoDia from "./pages/SantoDoDia";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/prayers/:id" element={<PrayerDetail />} />
           <Route path="/pray/:id" element={<PrayNow />} />
           <Route path="/churches" element={<Igrejas />} />
+          <Route path="/igrejas-proximas" element={<IgrejasProximas />} />
           <Route path="/examination" element={<ExameConsciencia />} />
           <Route path="/examination/realizar" element={<RealizarExame />} />
           <Route path="/examination/conclusao" element={<ExameConclusao />} />

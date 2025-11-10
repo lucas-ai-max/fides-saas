@@ -243,6 +243,28 @@ const Home = () => {
             </div>
           </div>
         </Card>
+
+        {/* Igrejas Próximas */}
+        <Card 
+          onClick={() => navigate('/igrejas-proximas')}
+          className="p-5 shadow-md hover:shadow-lg transition-all cursor-pointer border-l-4 border-l-blue-500"
+        >
+          <div className="flex items-start gap-4">
+            <div className="text-4xl flex-shrink-0">⛪</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-heading text-xl font-semibold text-primary">Igrejas Próximas</h3>
+                <ArrowRight className="w-5 h-5 text-accent flex-shrink-0" />
+              </div>
+              <p className="text-sm text-muted-foreground mb-1">
+                Encontre igrejas católicas perto de você
+              </p>
+              <p className="text-xs text-muted-foreground">
+                📍 Busca em raio de 5km
+              </p>
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Bottom Navigation */}
