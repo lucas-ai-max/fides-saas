@@ -329,21 +329,41 @@ export default function IgrejasProximas() {
                 )}
 
                 {/* Botões de Ação */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => abrirMapa(igreja, 'directions')}
-                    className="px-4 py-2.5 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 font-medium cursor-pointer"
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Waze (nunca bloqueia) */}
+                    <a
+                      href={`https://waze.com/ul?ll=${igreja.latitude},${igreja.longitude}&navigate=yes`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium no-underline shadow-sm"
+                    >
+                      <Navigation className="w-4 h-4" />
+                      Waze
+                    </a>
+                    
+                    {/* Google Maps (URL alternativa sem bloqueio) */}
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${igreja.latitude},${igreja.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 font-medium no-underline shadow-sm"
+                    >
+                      <MapPin className="w-4 h-4" />
+                      Google Maps
+                    </a>
+                  </div>
+
+                  {/* OpenStreetMap */}
+                  <a
+                    href={`https://www.openstreetmap.org/#map=18/${igreja.latitude}/${igreja.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm no-underline shadow-sm"
                   >
-                    <Navigation className="w-4 h-4" />
-                    Como chegar
-                  </button>
-                  <button
-                    onClick={() => abrirMapa(igreja, 'view')}
-                    className="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium cursor-pointer"
-                  >
-                    <MapPin className="w-4 h-4" />
-                    Ver no mapa
-                  </button>
+                    <Globe className="w-4 h-4" />
+                    OpenStreetMap
+                  </a>
                 </div>
 
                 {/* Botão Compartilhar */}
