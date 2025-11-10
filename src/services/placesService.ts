@@ -21,7 +21,7 @@ interface IgrejaCatolica {
 }
 
 class PlacesService {
-  private readonly RAIO_BUSCA = 5000; // 5km em metros
+  private readonly RAIO_BUSCA = 10000; // 10km em metros
   private cache: Map<string, { data: IgrejaCatolica[]; timestamp: number }> = new Map();
   private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutos
 
@@ -94,10 +94,11 @@ class PlacesService {
         return cached.data;
       }
 
-      console.log('🔍 Buscando igrejas no OpenStreetMap...');
+      console.log(`🔍 Buscando igrejas no OpenStreetMap (raio: ${(raioFinal / 1000).toFixed(1)}km)...`);
+      console.log(`📍 Localização: ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`);
 
-      // Buscar usando Overpass API (OpenStreetMap)
-      const igrejas = await this.buscarNoOpenStreetMap(loc, raioFinal);
+      // Buscar usando Overpass API com fallback em cascata
+      const igrejas = await this.buscarComFallback(loc, raioFinal);
 
       // Salvar no cache
       this.cache.set(cacheKey, {
@@ -114,27 +115,106 @@ class PlacesService {
   }
 
   /**
+   * Busca com fallback em cascata (3 níveis)
+   */
+  private async buscarComFallback(
+    localizacao: LocalizacaoUsuario,
+    raio: number
+  ): Promise<IgrejaCatolica[]> {
+    console.log('🔄 Iniciando busca em cascata...');
+
+    // Nível 1: Católicas específicas
+    console.log('📌 Tentativa 1: Igrejas católicas específicas');
+    let igrejas = await this.buscarNoOpenStreetMap(localizacao, raio, 'catholic');
+    
+    if (igrejas.length > 0) {
+      console.log(`✅ Nível 1: ${igrejas.length} igrejas católicas encontradas`);
+      return igrejas;
+    }
+
+    // Nível 2: Todas as igrejas cristãs
+    console.log('📌 Tentativa 2: Igrejas cristãs (fallback)');
+    igrejas = await this.buscarNoOpenStreetMap(localizacao, raio, 'christian');
+    
+    if (igrejas.length > 0) {
+      console.log(`✅ Nível 2: ${igrejas.length} igrejas cristãs encontradas`);
+      return igrejas;
+    }
+
+    // Nível 3: Todos os locais de culto
+    console.log('📌 Tentativa 3: Todos os locais de culto (fallback)');
+    igrejas = await this.buscarNoOpenStreetMap(localizacao, raio, 'all');
+    
+    if (igrejas.length > 0) {
+      console.log(`✅ Nível 3: ${igrejas.length} locais de culto encontrados`);
+      return igrejas;
+    }
+
+    // Nível 4: Busca por palavras-chave no nome
+    console.log('📌 Tentativa 4: Busca por palavras-chave');
+    igrejas = await this.buscarPorNome(localizacao, raio);
+    
+    if (igrejas.length > 0) {
+      console.log(`✅ Nível 4: ${igrejas.length} igrejas encontradas por nome`);
+      return igrejas;
+    }
+
+    console.log('⚠️ Nenhuma igreja encontrada em nenhum nível');
+    return [];
+  }
+
+  /**
    * Busca igrejas usando Overpass API (OpenStreetMap)
    */
   private async buscarNoOpenStreetMap(
     localizacao: LocalizacaoUsuario,
-    raio: number
+    raio: number,
+    nivel: 'catholic' | 'christian' | 'all' = 'catholic'
   ): Promise<IgrejaCatolica[]> {
     const overpassUrl = 'https://overpass-api.de/api/interpreter';
 
-    // Query Overpass QL
-    // Busca: amenity=place_of_worship + religion=christian + denomination=catholic
-    const query = `
-      [out:json][timeout:25];
-      (
-        node["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-        way["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-        relation["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-      );
-      out body;
-      >;
-      out skel qt;
-    `;
+    let query: string;
+
+    if (nivel === 'catholic') {
+      // Busca específica: católicas
+      query = `
+        [out:json][timeout:25];
+        (
+          node["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+          way["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+          relation["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+        );
+        out body;
+        >;
+        out skel qt;
+      `;
+    } else if (nivel === 'christian') {
+      // Busca mais ampla: cristãs
+      query = `
+        [out:json][timeout:25];
+        (
+          node["amenity"="place_of_worship"]["religion"="christian"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+          way["amenity"="place_of_worship"]["religion"="christian"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+          relation["amenity"="place_of_worship"]["religion"="christian"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+        );
+        out body;
+        >;
+        out skel qt;
+      `;
+    } else {
+      // Busca mais ampla: todos os locais de culto
+      query = `
+        [out:json][timeout:25];
+        (
+          node["amenity"="place_of_worship"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+          way["amenity"="place_of_worship"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+          relation["amenity"="place_of_worship"](around:${raio},${localizacao.latitude},${localizacao.longitude});
+        );
+        out body;
+        >;
+        out skel qt;
+      `;
+    }
 
     try {
       const response = await fetch(overpassUrl, {
@@ -150,6 +230,8 @@ class PlacesService {
       }
 
       const data = await response.json();
+
+      console.log(`📊 API retornou ${data.elements?.length || 0} elementos`);
 
       // Transformar resultados
       const igrejas: IgrejaCatolica[] = [];
@@ -187,6 +269,8 @@ class PlacesService {
       // Ordenar por distância
       igrejasUnicas.sort((a, b) => (a.distancia || 0) - (b.distancia || 0));
 
+      console.log(`🔍 Após processamento: ${igrejasUnicas.length} igrejas únicas`);
+
       // Enriquecer com endereços (apenas as 10 mais próximas para não sobrecarregar)
       await this.enriquecerComEnderecos(igrejasUnicas.slice(0, 10));
 
@@ -215,9 +299,8 @@ class PlacesService {
 
     const tags = element.tags || {};
 
-    // Filtrar se não for igreja
+    // Filtrar apenas por amenity (mais flexível)
     if (tags.amenity !== 'place_of_worship') return null;
-    if (tags.religion !== 'christian') return null;
 
     return {
       id: `osm-${element.type}-${element.id}`,
@@ -410,6 +493,81 @@ class PlacesService {
     } else {
       await navigator.clipboard.writeText(texto);
       return Promise.resolve();
+    }
+  }
+
+  /**
+   * Busca por palavras-chave no nome (fallback final)
+   */
+  private async buscarPorNome(
+    localizacao: LocalizacaoUsuario,
+    raio: number
+  ): Promise<IgrejaCatolica[]> {
+    const overpassUrl = 'https://overpass-api.de/api/interpreter';
+
+    const query = `
+      [out:json][timeout:25];
+      (
+        node["amenity"="place_of_worship"]["name"~"igreja|paróquia|catedral|capela|church",i](around:${raio},${localizacao.latitude},${localizacao.longitude});
+        way["amenity"="place_of_worship"]["name"~"igreja|paróquia|catedral|capela|church",i](around:${raio},${localizacao.latitude},${localizacao.longitude});
+      );
+      out body;
+      >;
+      out skel qt;
+    `;
+
+    try {
+      const response = await fetch(overpassUrl, {
+        method: 'POST',
+        body: `data=${encodeURIComponent(query)}`,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na API: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(`📊 Busca por nome retornou ${data.elements?.length || 0} elementos`);
+
+      const igrejas: IgrejaCatolica[] = [];
+      const processedIds = new Set<string>();
+
+      for (const element of data.elements) {
+        const elementId = `${element.type}-${element.id}`;
+        
+        if (processedIds.has(elementId)) continue;
+        processedIds.add(elementId);
+
+        if (element.type === 'node' && element.tags && element.lat && element.lon) {
+          const igreja = this.transformarElementoOSM(element, localizacao);
+          if (igreja) {
+            igrejas.push(igreja);
+          }
+        } else if (element.type === 'way' && element.tags) {
+          const center = this.calcularCentroWay(element, data.elements);
+          if (center) {
+            const igreja = this.transformarElementoOSM(
+              { ...element, lat: center.lat, lon: center.lon },
+              localizacao
+            );
+            if (igreja) {
+              igrejas.push(igreja);
+            }
+          }
+        }
+      }
+
+      const igrejasUnicas = this.removerDuplicatas(igrejas);
+      igrejasUnicas.sort((a, b) => (a.distancia || 0) - (b.distancia || 0));
+      await this.enriquecerComEnderecos(igrejasUnicas.slice(0, 10));
+
+      return igrejasUnicas;
+    } catch (error) {
+      console.error('Erro ao buscar por nome:', error);
+      return [];
     }
   }
 

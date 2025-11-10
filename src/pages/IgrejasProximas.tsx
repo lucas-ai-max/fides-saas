@@ -20,17 +20,18 @@ export default function IgrejasProximas() {
   const [igrejas, setIgrejas] = useState<IgrejaCatolica[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [raio, setRaio] = useState<number>(10000); // 10km padrão
 
   useEffect(() => {
     carregarIgrejas();
-  }, []);
+  }, [raio]);
 
   const carregarIgrejas = async () => {
     setCarregando(true);
     setErro(null);
 
     try {
-      const resultado = await placesService.buscarIgrejasProximas();
+      const resultado = await placesService.buscarIgrejasProximas(undefined, raio);
       setIgrejas(resultado);
 
       if (resultado.length === 0) {
@@ -137,6 +138,47 @@ export default function IgrejasProximas() {
         </div>
       </header>
 
+      {/* Seletor de Raio */}
+      <div className="max-w-2xl mx-auto px-4 mt-4">
+        <div className="bg-card rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Raio de busca
+          </label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setRaio(5000)}
+              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
+                raio === 5000
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              5 km
+            </button>
+            <button
+              onClick={() => setRaio(10000)}
+              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
+                raio === 10000
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              10 km
+            </button>
+            <button
+              onClick={() => setRaio(15000)}
+              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
+                raio === 15000
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              15 km
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Contador */}
       <div className="max-w-2xl mx-auto px-4 mt-4 mb-4">
         <div className="bg-card rounded-lg p-4 shadow-sm text-center">
@@ -144,7 +186,7 @@ export default function IgrejasProximas() {
             <span className="font-bold text-accent text-2xl">{igrejas.length}</span>{' '}
             {igrejas.length === 1 ? 'igreja católica encontrada' : 'igrejas católicas encontradas'}
           </p>
-          <p className="text-muted-foreground text-sm mt-1">Raio de 5km</p>
+          <p className="text-muted-foreground text-sm mt-1">Raio de {raio / 1000}km</p>
         </div>
       </div>
 
@@ -284,9 +326,14 @@ export default function IgrejasProximas() {
           <div className="text-center py-12">
             <Church className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <p className="text-foreground font-semibold mb-2">Nenhuma igreja encontrada</p>
-            <p className="text-muted-foreground text-sm">
-              Não encontramos igrejas católicas registradas em um raio de 5km
+            <p className="text-muted-foreground text-sm mb-4">
+              Não encontramos igrejas católicas registradas em um raio de {raio / 1000}km
             </p>
+            {raio < 15000 && (
+              <p className="text-muted-foreground text-sm">
+                💡 Tente aumentar o raio de busca acima
+              </p>
+            )}
           </div>
         )}
 
