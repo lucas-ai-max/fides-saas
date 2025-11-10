@@ -237,7 +237,7 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
                   </div>
                   <div className="text-left">
                     <h3 
-                      className={`font-bold uppercase tracking-wider ${
+                      className={`font-sans font-bold uppercase tracking-wider ${
                         isEvangelho ? 'text-white' : 'text-primary'
                       }`}
                       style={{ fontSize: fontConfig.title }}
@@ -245,7 +245,7 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
                       {leitura.titulo}
                     </h3>
                     <p
-                      className={`font-semibold mt-1 ${
+                      className={`font-sans font-semibold mt-1 ${
                         isEvangelho ? 'text-accent-light' : 'text-accent-dark'
                       }`}
                       style={{ fontSize: fontConfig.reference }}
@@ -264,10 +264,10 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
               {/* Texto da Leitura */}
               {isExpandido && (
                 <div className={`px-6 py-7 ${
-                  isEvangelho ? 'bg-white/80 backdrop-blur-sm relative' : ''
+                  isEvangelho ? 'bg-white/90 backdrop-blur-sm relative' : 'bg-card'
                 }`}>
                   <p 
-                    className="font-heading text-text-primary whitespace-pre-line"
+                    className="font-serif texto-biblico whitespace-pre-line"
                     style={{
                       fontSize: fontConfig.body,
                       lineHeight: fontConfig.lineHeight,
@@ -276,7 +276,7 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
                     {leitura.texto}
                   </p>
 
-                  <button className="mt-4 flex items-center gap-2 text-sm text-primary hover:text-primary-dark transition-colors font-medium">
+                  <button className="mt-5 flex items-center gap-2 text-sm text-primary hover:text-primary-dark transition-colors font-sans font-medium">
                     <Volume2 className="w-4 h-4" />
                     <span>Ouvir leitura (em breve)</span>
                   </button>
@@ -302,7 +302,7 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
                 <span className="text-xl">💡</span>
               </div>
               <h3 
-                className="font-bold uppercase tracking-wider text-accent-dark"
+                className="font-sans font-bold uppercase tracking-wider text-accent-dark"
                 style={{ fontSize: fontConfig.title }}
               >
                 Reflexão do Dia
@@ -311,9 +311,9 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
           </div>
 
           {/* Texto */}
-          <div className="px-6 py-6 bg-white/60">
+          <div className="px-6 py-7 bg-white/70">
             <p 
-              className="font-heading text-text-primary italic"
+              className="font-serif texto-biblico italic text-gray-800"
               style={{
                 fontSize: fontConfig.body,
                 lineHeight: fontConfig.lineHeight,
@@ -326,7 +326,7 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
           {/* Footer */}
           <div className="px-5 py-3 bg-accent/5 border-t border-accent/20">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-accent-dark font-medium flex items-center gap-1">
+              <span className="font-sans text-accent-dark font-medium flex items-center gap-1">
                 <span>⏱️</span>
                 3 min de leitura
               </span>

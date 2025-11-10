@@ -94,8 +94,9 @@ export default {
       },
       fontFamily: {
         heading: ['Playfair Display', 'serif'],
-        serif: ['Playfair Display', 'serif'],
-        sans: ['Inter', 'sans-serif'],
+        serif: ['Literata', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+        scripture: ['Literata', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
       },
       fontSize: {

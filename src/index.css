@@ -181,6 +181,78 @@ All colors MUST be HSL.
     font-family: 'Inter', sans-serif;
   }
   
+  /* Texto Bíblico - Otimizado para Leitura */
+  .texto-biblico {
+    font-family: 'Literata', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.9;
+    color: hsl(222 47% 11%);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+  
+  /* Responsivo - Desktop */
+  @media (min-width: 768px) {
+    .texto-biblico {
+      font-size: 20px;
+      line-height: 2.0;
+    }
+  }
+  
+  /* Alta resolução */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .texto-biblico {
+      -webkit-font-smoothing: subpixel-antialiased;
+    }
+  }
+  
+  /* Citações em itálico */
+  .texto-biblico em,
+  .texto-biblico .citacao {
+    font-style: italic;
+    color: hsl(217 91% 60%);
+  }
+  
+  /* Palavras com destaque */
+  .texto-biblico strong {
+    font-weight: 600;
+    color: hsl(38 92% 50%);
+  }
+  
+  /* Espaçamento entre parágrafos */
+  .texto-biblico p + p {
+    margin-top: 1.5em;
+  }
+  
+  /* Versículos numerados */
+  .texto-biblico .versiculo {
+    display: block;
+    padding-left: 1.2em;
+    text-indent: -1.2em;
+    margin-bottom: 0.5em;
+  }
+  
+  .texto-biblico .numero-versiculo {
+    font-size: 0.75em;
+    color: hsl(214 32% 64%);
+    font-weight: 600;
+    vertical-align: super;
+    margin-right: 0.3em;
+  }
+  
+  /* Renderização otimizada para fonte serifada */
+  .font-serif,
+  .font-scripture {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+  
   /* Animation Utilities */
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
