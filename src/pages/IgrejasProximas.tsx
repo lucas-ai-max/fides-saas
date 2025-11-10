@@ -15,6 +15,30 @@ import {
 import { placesService, IgrejaCatolica } from '../services/placesService';
 import { toast } from 'sonner';
 
+// Detecta se é dispositivo móvel
+const isMobile = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+// Gera link apropriado para mobile (geo:) ou desktop (HTTP)
+const getMapLink = (igreja: IgrejaCatolica, tipo: 'directions' | 'view') => {
+  const { latitude, longitude } = igreja;
+  
+  if (isMobile()) {
+    // Mobile: usa geo: URI scheme
+    if (tipo === 'directions') {
+      return `geo:${latitude},${longitude}?q=${latitude},${longitude}`;
+    }
+    return `geo:${latitude},${longitude}`;
+  } else {
+    // Desktop: usa links HTTP
+    if (tipo === 'directions') {
+      return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+    }
+    return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}&zoom=18`;
+  }
+};
+
 export default function IgrejasProximas() {
   const navigate = useNavigate();
   const [igrejas, setIgrejas] = useState<IgrejaCatolica[]>([]);
@@ -293,14 +317,18 @@ export default function IgrejasProximas() {
                 {/* Botões de Ação */}
                 <div className="grid grid-cols-2 gap-2">
                   <a
-                    href={`geo:${igreja.latitude},${igreja.longitude}?q=${igreja.latitude},${igreja.longitude}`}
+                    href={getMapLink(igreja, 'directions')}
+                    target={isMobile() ? '_self' : '_blank'}
+                    rel="noopener noreferrer"
                     className="px-4 py-2.5 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 font-medium no-underline"
                   >
                     <Navigation className="w-4 h-4" />
                     Como chegar
                   </a>
                   <a
-                    href={`geo:${igreja.latitude},${igreja.longitude}`}
+                    href={getMapLink(igreja, 'view')}
+                    target={isMobile() ? '_self' : '_blank'}
+                    rel="noopener noreferrer"
                     className="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium no-underline"
                   >
                     <MapPin className="w-4 h-4" />
