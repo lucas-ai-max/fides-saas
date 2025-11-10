@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Share2,
   Church,
+  ExternalLink,
 } from 'lucide-react';
 import { placesService, IgrejaCatolica } from '../services/placesService';
 import { toast } from 'sonner';
@@ -328,42 +329,122 @@ export default function IgrejasProximas() {
                   </div>
                 )}
 
-                {/* Botões de Ação */}
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Waze (nunca bloqueia) */}
-                    <a
-                      href={`https://waze.com/ul?ll=${igreja.latitude},${igreja.longitude}&navigate=yes`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium no-underline shadow-sm"
-                    >
-                      <Navigation className="w-4 h-4" />
-                      Waze
-                    </a>
-                    
-                    {/* Google Maps (URL alternativa sem bloqueio) */}
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${igreja.latitude},${igreja.longitude}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 font-medium no-underline shadow-sm"
-                    >
-                      <MapPin className="w-4 h-4" />
-                      Google Maps
-                    </a>
-                  </div>
-
-                  {/* OpenStreetMap */}
+                {/* Botões de Ação - Versão Visual */}
+                <div className="space-y-3">
+                  {/* Card Principal - Ver no Mapa */}
                   <a
                     href={`https://www.openstreetmap.org/#map=18/${igreja.latitude}/${igreja.longitude}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm no-underline shadow-sm"
+                    className="block w-full p-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:shadow-lg transition-all no-underline"
                   >
-                    <Globe className="w-4 h-4" />
-                    OpenStreetMap
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <MapPin className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-bold text-lg">Ver no Mapa</p>
+                        <p className="text-sm text-green-100">Abrir localização no OpenStreetMap</p>
+                      </div>
+                      <ExternalLink className="w-5 h-5" />
+                    </div>
                   </a>
+
+                  {/* Grid de Ações Rápidas */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Copiar Coordenadas */}
+                    <button
+                      onClick={async () => {
+                        const coords = `${igreja.latitude}, ${igreja.longitude}`;
+                        try {
+                          await navigator.clipboard.writeText(coords);
+                          toast.success('📍 Coordenadas copiadas!', {
+                            description: 'Cole no Google Maps ou Waze'
+                          });
+                        } catch (error) {
+                          toast.error('Erro ao copiar');
+                        }
+                      }}
+                      className="p-4 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-xl transition-colors"
+                    >
+                      <div className="text-center">
+                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <MapPin className="w-5 h-5 text-white" />
+                        </div>
+                        <p className="text-sm font-semibold text-blue-900">Copiar</p>
+                        <p className="text-xs text-blue-600">Coordenadas</p>
+                      </div>
+                    </button>
+
+                    {/* Copiar Endereço */}
+                    <button
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(igreja.endereco);
+                          toast.success('📮 Endereço copiado!');
+                        } catch (error) {
+                          toast.error('Erro ao copiar');
+                        }
+                      }}
+                      className="p-4 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-xl transition-colors"
+                    >
+                      <div className="text-center">
+                        <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <MapPin className="w-5 h-5 text-white" />
+                        </div>
+                        <p className="text-sm font-semibold text-purple-900">Copiar</p>
+                        <p className="text-xs text-purple-600">Endereço</p>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Dica de Uso */}
+                  <div className="p-4 bg-amber-50 border-l-4 border-amber-400 rounded-lg">
+                    <div className="flex gap-3">
+                      <span className="text-2xl">💡</span>
+                      <div>
+                        <p className="text-sm font-semibold text-amber-900 mb-1">
+                          Como navegar até lá:
+                        </p>
+                        <p className="text-xs text-amber-800">
+                          Clique em "Copiar Coordenadas", abra o Google Maps ou Waze no seu celular, 
+                          cole as coordenadas na busca e inicie a navegação.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Links diretos (tentar abrir) */}
+                  <details className="mt-3">
+                    <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground font-medium">
+                      ⚙️ Tentar abrir em outros apps
+                    </summary>
+                    <div className="mt-2 space-y-2">
+                      {/* Google Maps */}
+                      <a
+                        href={`geo:${igreja.latitude},${igreja.longitude}`}
+                        className="block w-full px-4 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors text-center text-sm font-medium no-underline"
+                      >
+                        🗺️ Tentar Google Maps
+                      </a>
+                      
+                      {/* Waze */}
+                      <a
+                        href={`waze://?ll=${igreja.latitude},${igreja.longitude}&navigate=yes`}
+                        className="block w-full px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors text-center text-sm font-medium no-underline"
+                      >
+                        🚗 Tentar Waze
+                      </a>
+                      
+                      {/* Apple Maps */}
+                      <a
+                        href={`maps://?daddr=${igreja.latitude},${igreja.longitude}`}
+                        className="block w-full px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-center text-sm font-medium no-underline"
+                      >
+                        🍎 Tentar Apple Maps
+                      </a>
+                    </div>
+                  </details>
                 </div>
 
                 {/* Botão Compartilhar */}
