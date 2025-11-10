@@ -20,22 +20,36 @@ const isMobile = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 };
 
-// Gera link apropriado para mobile (geo:) ou desktop (HTTP)
-const getMapLink = (igreja: IgrejaCatolica, tipo: 'directions' | 'view') => {
+// Abre mapa usando JavaScript (evita bloqueio CORS)
+const abrirMapa = (igreja: IgrejaCatolica, tipo: 'directions' | 'view') => {
   const { latitude, longitude } = igreja;
   
-  if (isMobile()) {
-    // Mobile: usa geo: URI scheme
-    if (tipo === 'directions') {
-      return `geo:${latitude},${longitude}?q=${latitude},${longitude}`;
+  let url = '';
+  
+  if (tipo === 'directions') {
+    if (isMobile()) {
+      url = `geo:${latitude},${longitude}?q=${latitude},${longitude}`;
+      window.location.href = url;
+    } else {
+      // URL simplificada do Google Maps para desktop
+      url = `https://maps.google.com/?daddr=${latitude},${longitude}`;
+      
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      
+      // Fallback se bloqueado por popup blocker
+      if (!win || win.closed || typeof win.closed == 'undefined') {
+        window.location.href = url;
+      }
     }
-    return `geo:${latitude},${longitude}`;
   } else {
-    // Desktop: usa links HTTP
-    if (tipo === 'directions') {
-      return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+    if (isMobile()) {
+      url = `geo:${latitude},${longitude}`;
+      window.location.href = url;
+    } else {
+      // OpenStreetMap funciona melhor para visualização
+      url = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}&zoom=18`;
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
-    return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}&zoom=18`;
   }
 };
 
@@ -316,24 +330,20 @@ export default function IgrejasProximas() {
 
                 {/* Botões de Ação */}
                 <div className="grid grid-cols-2 gap-2">
-                  <a
-                    href={getMapLink(igreja, 'directions')}
-                    target={isMobile() ? '_self' : '_blank'}
-                    rel="noopener noreferrer"
-                    className="px-4 py-2.5 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 font-medium no-underline"
+                  <button
+                    onClick={() => abrirMapa(igreja, 'directions')}
+                    className="px-4 py-2.5 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 font-medium cursor-pointer"
                   >
                     <Navigation className="w-4 h-4" />
                     Como chegar
-                  </a>
-                  <a
-                    href={getMapLink(igreja, 'view')}
-                    target={isMobile() ? '_self' : '_blank'}
-                    rel="noopener noreferrer"
-                    className="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium no-underline"
+                  </button>
+                  <button
+                    onClick={() => abrirMapa(igreja, 'view')}
+                    className="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium cursor-pointer"
                   >
                     <MapPin className="w-4 h-4" />
                     Ver no mapa
-                  </a>
+                  </button>
                 </div>
 
                 {/* Botão Compartilhar */}
