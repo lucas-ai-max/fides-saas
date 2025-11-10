@@ -11,9 +11,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { liturgiaService, type LiturgiaDiaria } from '@/services/liturgiaService';
 import { toast } from 'sonner';
+import FontSizeControl from '@/components/FontSizeControl';
+import { useFontSize } from '@/hooks/useFontSize';
 
 const LiturgiaDiaria = () => {
   const navigate = useNavigate();
+  const { fontSize, setFontSize, config: fontConfig } = useFontSize();
   const [liturgia, setLiturgia] = useState<LiturgiaDiaria | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,117 +140,152 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
     evangelho: '✝️',
   };
 
-  const coresHeader: Record<string, string> = {
-    primeira: 'bg-blue-50 border-blue-200',
-    salmo: 'bg-purple-50 border-purple-200',
-    segunda: 'bg-green-50 border-green-200',
-    evangelho: 'bg-gradient-to-r from-accent/10 to-accent/5 border-accent',
-  };
-
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background-secondary pb-24">
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-20 shadow-sm">
+      <header className="bg-card border-b border-gray-light sticky top-0 z-20 shadow-sm">
         <div className="flex items-center justify-between p-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-accent/10 rounded-full transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-light transition-colors"
           >
-            <ArrowLeft className="w-6 h-6 text-primary" />
+            <ArrowLeft className="w-5 h-5 text-text-primary" />
           </button>
-          <h1 className="text-xl font-serif font-semibold text-primary">Liturgia Diária</h1>
-          <div className="flex items-center gap-1">
+          <h1 className="text-lg font-heading font-semibold text-text-primary">Liturgia Diária</h1>
+          <div className="flex items-center gap-2">
             <button
               onClick={handleSalvar}
-              className="p-2 hover:bg-accent/10 rounded-full transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-light transition-colors"
               title={salvo ? 'Remover dos salvos' : 'Salvar liturgia'}
             >
               <Bookmark
-                className={`w-5 h-5 ${salvo ? 'fill-accent text-accent' : 'text-muted-foreground'}`}
+                className={`w-5 h-5 ${salvo ? 'fill-accent text-accent' : 'text-gray-text'}`}
               />
             </button>
             <button
               onClick={handleCompartilhar}
-              className="p-2 hover:bg-accent/10 rounded-full transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-light transition-colors"
               title="Compartilhar"
             >
-              <Share2 className="w-5 h-5 text-muted-foreground" />
+              <Share2 className="w-5 h-5 text-gray-text" />
             </button>
           </div>
         </div>
 
-        {/* Info da Data */}
-        <div className="px-4 pb-4">
-          <p className="text-lg font-serif font-semibold text-primary capitalize">
-            {liturgia.dia}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">{liturgia.tempo}</p>
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-sm font-medium text-foreground">Cor Litúrgica:</span>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
-              <span className="text-lg">{liturgiaService.getEmojiCor(liturgia.cor)}</span>
-              <span className="text-sm font-semibold text-foreground">
-                {liturgiaService.getNomeCorLiturgica(liturgia.cor)}
-              </span>
+        {/* Info da Data e Controle de Fonte */}
+        <div className="px-4 pb-3 pt-2 border-t border-gray-light">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <h2 className="text-lg font-heading font-semibold text-primary capitalize">
+                {liturgia.dia}
+              </h2>
+              <p className="text-sm text-gray-text mt-0.5">{liturgia.tempo}</p>
+            </div>
+            <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-semibold border border-primary/20 flex-shrink-0">
+              <div className="w-2 h-2 bg-primary rounded-full"></div>
+              {liturgiaService.getNomeCorLiturgica(liturgia.cor)}
             </div>
           </div>
+
+          {/* Controle de Fonte */}
+          <FontSizeControl
+            currentSize={fontSize}
+            onChange={setFontSize}
+          />
         </div>
       </header>
 
       {/* Leituras */}
-      <div className="px-4 pt-4 space-y-4">
+      <div className="px-4 pt-6 space-y-6">
         {liturgia.leituras.map((leitura, index) => {
           const isExpandido = leituraExpandida === leitura.tipo;
           const isEvangelho = leitura.tipo === 'evangelho';
+          const isSalmo = leitura.tipo === 'salmo';
 
           return (
             <div
               key={index}
-              className={`bg-card rounded-xl border-2 overflow-hidden transition-all ${
-                isEvangelho ? 'border-accent shadow-md' : 'border-border'
+              className={`bg-card rounded-2xl overflow-hidden shadow-sm border transition-all ${
+                isEvangelho 
+                  ? 'border-primary/30 shadow-md relative' 
+                  : 'border-gray-light'
               }`}
             >
+              {/* Decoração para Evangelho */}
+              {isEvangelho && (
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-30"></div>
+              )}
+
               {/* Header da Leitura */}
               <button
                 onClick={() => toggleLeitura(leitura.tipo)}
-                className={`w-full p-4 flex items-center justify-between ${
-                  coresHeader[leitura.tipo] || 'bg-muted'
+                className={`relative w-full px-5 py-4 flex items-center justify-between ${
+                  isEvangelho 
+                    ? 'bg-gradient-to-r from-primary to-primary-light' 
+                    : isSalmo
+                    ? 'bg-gradient-to-r from-purple-50 to-purple-100'
+                    : 'bg-gradient-to-r from-blue-50 to-sky-50'
                 } hover:brightness-95 transition-all`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{icones[leitura.tipo]}</span>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    isEvangelho 
+                      ? 'bg-white shadow-lg' 
+                      : 'bg-white/80'
+                  }`}>
+                    <span className="text-xl">{icones[leitura.tipo]}</span>
+                  </div>
                   <div className="text-left">
-                    <h3 className="font-bold text-sm uppercase tracking-wide text-foreground">
+                    <h3 
+                      className={`font-bold uppercase tracking-wider ${
+                        isEvangelho ? 'text-white' : 'text-primary'
+                      }`}
+                      style={{ fontSize: fontConfig.title }}
+                    >
                       {leitura.titulo}
                     </h3>
                     <p
-                      className={`text-sm font-semibold ${
-                        isEvangelho ? 'text-accent' : 'text-muted-foreground'
-                      } mt-0.5`}
+                      className={`font-semibold mt-1 ${
+                        isEvangelho ? 'text-accent-light' : 'text-accent-dark'
+                      }`}
+                      style={{ fontSize: fontConfig.reference }}
                     >
                       {leitura.referencia}
                     </p>
                   </div>
                 </div>
                 <ChevronDown
-                  className={`w-5 h-5 text-muted-foreground transition-transform ${
-                    isExpandido ? 'rotate-180' : ''
-                  }`}
+                  className={`w-5 h-5 transition-transform flex-shrink-0 ${
+                    isEvangelho ? 'text-white' : 'text-gray-text'
+                  } ${isExpandido ? 'rotate-180' : ''}`}
                 />
               </button>
 
               {/* Texto da Leitura */}
               {isExpandido && (
-                <div className="p-6 border-t border-border bg-card">
-                  <p className="font-serif text-base leading-relaxed text-foreground whitespace-pre-line">
+                <div className={`px-6 py-7 ${
+                  isEvangelho ? 'bg-white/80 backdrop-blur-sm relative' : ''
+                }`}>
+                  <p 
+                    className="font-heading text-text-primary whitespace-pre-line"
+                    style={{
+                      fontSize: fontConfig.body,
+                      lineHeight: fontConfig.lineHeight,
+                    }}
+                  >
                     {leitura.texto}
                   </p>
 
-                  <button className="mt-4 flex items-center gap-2 text-sm text-accent hover:text-accent/90 transition-colors font-medium">
+                  <button className="mt-4 flex items-center gap-2 text-sm text-primary hover:text-primary-dark transition-colors font-medium">
                     <Volume2 className="w-4 h-4" />
                     <span>Ouvir leitura (em breve)</span>
                   </button>
                 </div>
+              )}
+
+              {/* Borda decorativa para Evangelho */}
+              {isEvangelho && (
+                <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary"></div>
               )}
             </div>
           );
@@ -256,19 +294,51 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
 
       {/* Reflexão */}
       {liturgia.reflexao && (
-        <div className="mx-4 mt-6 mb-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">💡</span>
-            <h3 className="font-semibold text-primary text-lg">Reflexão do Dia</h3>
+        <div className="mx-4 mt-6 mb-4 bg-gradient-to-br from-accent/5 to-accent-light/10 rounded-2xl overflow-hidden shadow-sm border border-accent/20">
+          {/* Header */}
+          <div className="px-5 py-4 border-b border-accent/20 bg-white/60">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center">
+                <span className="text-xl">💡</span>
+              </div>
+              <h3 
+                className="font-bold uppercase tracking-wider text-accent-dark"
+                style={{ fontSize: fontConfig.title }}
+              >
+                Reflexão do Dia
+              </h3>
+            </div>
           </div>
-          <p className="font-serif text-foreground leading-relaxed">{liturgia.reflexao}</p>
+
+          {/* Texto */}
+          <div className="px-6 py-6 bg-white/60">
+            <p 
+              className="font-heading text-text-primary italic"
+              style={{
+                fontSize: fontConfig.body,
+                lineHeight: fontConfig.lineHeight,
+              }}
+            >
+              {liturgia.reflexao}
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="px-5 py-3 bg-accent/5 border-t border-accent/20">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-accent-dark font-medium flex items-center gap-1">
+                <span>⏱️</span>
+                3 min de leitura
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Fonte */}
       <div className="px-4 pt-6 pb-6">
-        <div className="bg-muted rounded-lg p-4 border border-border">
-          <p className="text-xs text-center text-muted-foreground">
+        <div className="bg-gray-light rounded-xl p-4 border border-gray-light">
+          <p className="text-xs text-center text-gray-text">
             📖 Fonte: <span className="font-semibold">{liturgia.fonte}</span> (CNBB - Conferência
             Nacional dos Bispos do Brasil)
           </p>
