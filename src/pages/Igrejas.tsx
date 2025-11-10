@@ -11,6 +11,7 @@ import {
   Star,
   Image as ImageIcon,
   AlertCircle,
+  Info,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { igrejasService, Igreja } from '@/services/igrejasService';
@@ -23,6 +24,7 @@ const Igrejas = () => {
   const [error, setError] = useState<string | null>(null);
   const [filtroRaio, setFiltroRaio] = useState(5);
   const [localizacaoAtual, setLocalizacaoAtual] = useState('Carregando...');
+  const [fonteAtual, setFonteAtual] = useState<'foursquare' | 'openstreetmap' | null>(null);
 
   useEffect(() => {
     carregarDados();
@@ -55,6 +57,10 @@ const Igrejas = () => {
     try {
       const resultado = await igrejasService.buscarIgrejasProximas(filtroRaio);
       setIgrejas(resultado);
+      
+      if (resultado.length > 0) {
+        setFonteAtual(resultado[0].fonte);
+      }
 
       if (resultado.length === 0) {
         setError(`Nenhuma igreja católica encontrada em ${filtroRaio} km. Tente aumentar o raio.`);
@@ -90,6 +96,23 @@ const Igrejas = () => {
           <span>{localizacaoAtual}</span>
         </div>
       </header>
+
+      {/* Banner informativo sobre fonte de dados */}
+      {fonteAtual === 'openstreetmap' && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mx-4 my-2 rounded">
+          <div className="flex items-start">
+            <Info className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-800">
+                Usando dados do OpenStreetMap
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                Os dados podem estar incompletos. Contribua adicionando informações no OpenStreetMap!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filtro de Raio */}
       <div className="bg-background border-b border-border px-4 py-4">
@@ -209,6 +232,13 @@ const Igrejas = () => {
 
                     {/* Endereço */}
                     <p className="text-sm text-muted-foreground mb-3">{igreja.endereco}</p>
+
+                    {/* Badge da fonte */}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                      <span className="px-2 py-1 bg-muted rounded">
+                        {igreja.fonte === 'foursquare' ? '📍 Foursquare' : '🗺️ OpenStreetMap'}
+                      </span>
+                    </div>
 
                     {/* Horários */}
                     {igreja.horarios && (

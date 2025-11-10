@@ -19,6 +19,7 @@ interface Igreja {
     horarioHoje?: string;
     todos?: any;
   };
+  fonte: 'foursquare' | 'openstreetmap';
 }
 
 interface Coordenadas {
@@ -30,12 +31,9 @@ class IgrejasService {
   private readonly API_KEY = import.meta.env.VITE_FOURSQUARE_API_KEY;
   private readonly BASE_URL = 'https://api.foursquare.com/v3';
   private userLocation: Coordenadas | null = null;
-
-  constructor() {
-    if (!this.API_KEY) {
-      console.error('⚠️ Foursquare API Key não configurada!');
-    }
-  }
+  private usandoFallback = false;
+  private cache: Map<string, { data: Igreja[]; timestamp: number }> = new Map();
+  private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutos
 
   // Obtém localização do usuário
   async getUserLocation(): Promise<Coordenadas> {
@@ -59,13 +57,13 @@ class IgrejasService {
 
           switch (error.code) {
             case error.PERMISSION_DENIED:
-              errorMessage = 'Permissão de localização negada. Ative nas configurações do navegador.';
+              errorMessage = 'Permissão de localização negada. Por favor, permita o acesso à localização nas configurações do navegador.';
               break;
             case error.POSITION_UNAVAILABLE:
-              errorMessage = 'Localização indisponível no momento.';
+              errorMessage = 'Localização indisponível. Verifique se o GPS está ativado.';
               break;
             case error.TIMEOUT:
-              errorMessage = 'Tempo esgotado ao buscar localização.';
+              errorMessage = 'Tempo esgotado ao buscar localização. Tente novamente.';
               break;
           }
 
@@ -80,95 +78,223 @@ class IgrejasService {
     });
   }
 
-  // Busca igrejas católicas próximas
+  // Busca igrejas (tenta Foursquare, se falhar usa OSM)
   async buscarIgrejasProximas(raioKm: number = 5): Promise<Igreja[]> {
+    if (!this.userLocation) {
+      this.userLocation = await this.getUserLocation();
+    }
+
+    // Verificar cache
+    const cacheKey = `${this.userLocation.lat},${this.userLocation.lng}-${raioKm}`;
+    const cached = this.cache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      console.log('✓ Usando dados do cache');
+      this.usandoFallback = cached.data[0]?.fonte === 'openstreetmap';
+      return cached.data;
+    }
+
     try {
-      if (!this.API_KEY) {
-        throw new Error('API Key do Foursquare não configurada');
-      }
-
-      if (!this.userLocation) {
-        this.userLocation = await this.getUserLocation();
-      }
-
-      const { lat, lng } = this.userLocation;
-      const raioMetros = raioKm * 1000;
-
-      const url = new URL(`${this.BASE_URL}/places/search`);
-      url.searchParams.append('ll', `${lat},${lng}`);
-      url.searchParams.append('radius', raioMetros.toString());
-      url.searchParams.append('categories', '12060');
-      url.searchParams.append('limit', '50');
-      url.searchParams.append(
-        'fields',
-        'fsq_id,name,location,distance,geocodes,tel,website,rating,stats,categories,hours,photos'
-      );
-
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          Authorization: this.API_KEY,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar igrejas: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const igrejasCatolicas = data.results.filter((place: any) => {
-        const nome = place.name?.toLowerCase() || '';
-        return (
-          nome.includes('católica') ||
-          nome.includes('catolica') ||
-          nome.includes('paróquia') ||
-          nome.includes('paroquia') ||
-          nome.includes('matriz') ||
-          nome.includes('catedral') ||
-          nome.includes('basílica') ||
-          nome.includes('basilica') ||
-          nome.includes('santuário') ||
-          nome.includes('santuario') ||
-          nome.includes('capela')
-        );
-      });
-
-      const igrejas: Igreja[] = igrejasCatolicas.map((place: any) => {
-        const coords = {
-          lat: place.geocodes?.main?.latitude || 0,
-          lng: place.geocodes?.main?.longitude || 0,
-        };
-
-        const distancia = this.calcularDistancia(this.userLocation!, coords);
-
-        return {
-          id: place.fsq_id,
-          nome: place.name,
-          endereco: place.location?.formatted_address || this.formatarEndereco(place.location),
-          cidade: place.location?.locality,
-          estado: place.location?.region,
-          cep: place.location?.postcode,
-          distancia: distancia,
-          latitude: coords.lat,
-          longitude: coords.lng,
-          telefone: place.tel,
-          website: place.website,
-          rating: place.rating,
-          totalAvaliacoes: place.stats?.total_ratings,
-          categorias: place.categories?.map((c: any) => c.name),
-          fotos: place.photos?.map((p: any) => this.getFotoURL(p)),
-          horarios: this.formatarHorarios(place.hours),
-        };
-      });
-
-      igrejas.sort((a, b) => a.distancia - b.distancia);
+      // Tenta Foursquare primeiro
+      const igrejas = await this.buscarFoursquare(raioKm);
+      this.usandoFallback = false;
+      
+      // Salvar no cache
+      this.cache.set(cacheKey, { data: igrejas, timestamp: Date.now() });
+      
       return igrejas;
     } catch (error: any) {
-      console.error('❌ Erro ao buscar igrejas:', error);
-      throw error;
+      console.warn('⚠️ Foursquare falhou, usando OpenStreetMap:', error.message);
+      
+      // Se Foursquare falhar, usa OpenStreetMap
+      this.usandoFallback = true;
+      const igrejas = await this.buscarOpenStreetMap(raioKm);
+      
+      // Salvar no cache
+      this.cache.set(cacheKey, { data: igrejas, timestamp: Date.now() });
+      
+      return igrejas;
     }
+  }
+
+  // Busca usando Foursquare API
+  private async buscarFoursquare(raioKm: number): Promise<Igreja[]> {
+    if (!this.userLocation) {
+      throw new Error('Localização não disponível');
+    }
+
+    const url = new URL(`${this.BASE_URL}/places/search`);
+    url.searchParams.append('ll', `${this.userLocation.lat},${this.userLocation.lng}`);
+    url.searchParams.append('radius', (raioKm * 1000).toString());
+    url.searchParams.append('categories', '12060');
+    url.searchParams.append('limit', '50');
+    url.searchParams.append(
+      'fields',
+      'fsq_id,name,location,distance,geocodes,tel,website,rating,stats,categories,hours,photos'
+    );
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: this.API_KEY,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('API Key inválida ou expirada');
+      } else if (response.status === 403) {
+        throw new Error('Acesso negado à API');
+      } else if (response.status === 429) {
+        throw new Error('Limite de requisições excedido');
+      } else {
+        throw new Error(`Erro na API: ${response.status}`);
+      }
+    }
+
+    const data = await response.json();
+
+    if (!data.results || data.results.length === 0) {
+      throw new Error('Nenhum resultado encontrado');
+    }
+
+    const igrejasCatolicas = data.results.filter((place: any) => 
+      this.ehIgrejaCatolica(place.name)
+    );
+
+    const igrejas: Igreja[] = igrejasCatolicas.map((place: any) => {
+      const coords = {
+        lat: place.geocodes?.main?.latitude || 0,
+        lng: place.geocodes?.main?.longitude || 0,
+      };
+
+      const distancia = this.calcularDistancia(this.userLocation!, coords);
+
+      return {
+        id: place.fsq_id,
+        nome: place.name,
+        endereco: place.location?.formatted_address || this.formatarEndereco(place.location),
+        cidade: place.location?.locality,
+        estado: place.location?.region,
+        cep: place.location?.postcode,
+        distancia: distancia,
+        latitude: coords.lat,
+        longitude: coords.lng,
+        telefone: place.tel,
+        website: place.website,
+        rating: place.rating,
+        totalAvaliacoes: place.stats?.total_ratings,
+        categorias: place.categories?.map((c: any) => c.name),
+        fotos: place.photos?.map((p: any) => this.getFotoURL(p)),
+        horarios: this.formatarHorarios(place.hours),
+        fonte: 'foursquare' as const,
+      };
+    });
+
+    igrejas.sort((a, b) => a.distancia - b.distancia);
+    return igrejas;
+  }
+
+  // Busca usando OpenStreetMap (Overpass API) - FALLBACK GRATUITO
+  private async buscarOpenStreetMap(raioKm: number): Promise<Igreja[]> {
+    if (!this.userLocation) {
+      throw new Error('Localização não disponível');
+    }
+
+    const query = `
+      [out:json][timeout:25];
+      (
+        node["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"]
+          (around:${raioKm * 1000},${this.userLocation.lat},${this.userLocation.lng});
+        way["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"]
+          (around:${raioKm * 1000},${this.userLocation.lat},${this.userLocation.lng});
+        relation["amenity"="place_of_worship"]["religion"="christian"]["denomination"="catholic"]
+          (around:${raioKm * 1000},${this.userLocation.lat},${this.userLocation.lng});
+      );
+      out body center;
+    `;
+
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: query,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar dados do OpenStreetMap');
+    }
+
+    const data = await response.json();
+
+    if (!data.elements || data.elements.length === 0) {
+      return [];
+    }
+
+    const igrejas = data.elements.map((element: any) => {
+      const lat = element.lat || element.center?.lat || 0;
+      const lng = element.lon || element.center?.lon || 0;
+      const distancia = this.calcularDistancia(
+        this.userLocation!,
+        { lat, lng }
+      );
+
+      const tags = element.tags || {};
+      const endereco = [
+        tags['addr:street'],
+        tags['addr:housenumber'],
+        tags['addr:suburb'] || tags['addr:district'],
+        tags['addr:city'],
+      ]
+        .filter(Boolean)
+        .join(', ') || 'Endereço não disponível';
+
+      return {
+        id: `osm-${element.id}`,
+        nome: tags.name || 'Igreja Católica',
+        endereco,
+        cidade: tags['addr:city'],
+        estado: tags['addr:state'],
+        cep: tags['addr:postcode'],
+        distancia: parseFloat(distancia.toFixed(1)),
+        latitude: lat,
+        longitude: lng,
+        telefone: tags['contact:phone'] || tags.phone,
+        website: tags['contact:website'] || tags.website,
+        fonte: 'openstreetmap' as const,
+      };
+    });
+
+    igrejas.sort((a, b) => a.distancia - b.distancia);
+    return igrejas;
+  }
+
+  // Verifica se o nome indica igreja católica
+  private ehIgrejaCatolica(nome: string): boolean {
+    const nomeLower = nome.toLowerCase();
+    const termosCatolicos = [
+      'católica',
+      'catolica',
+      'paróquia',
+      'paroquia',
+      'matriz',
+      'capela',
+      'basílica',
+      'basilica',
+      'catedral',
+      'santuário',
+      'santuario',
+      'nossa senhora',
+      'são ',
+      'santa ',
+      'santo ',
+      'n. s.',
+      'n.s.',
+    ];
+
+    return termosCatolicos.some(termo => nomeLower.includes(termo));
   }
 
   private getFotoURL(photo: any): string {
@@ -237,6 +363,11 @@ class IgrejasService {
     } catch (error) {
       return 'Localização atual';
     }
+  }
+
+  // Indica se está usando fallback
+  estáUsandoFallback(): boolean {
+    return this.usandoFallback;
   }
 }
 
