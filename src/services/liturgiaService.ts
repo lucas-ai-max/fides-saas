@@ -16,7 +16,7 @@ interface LiturgiaDiaria {
 }
 
 class LiturgiaService {
-  private readonly API_BASE_URL = 'https://liturgia-diaria-api.vercel.app';
+  private readonly API_BASE_URL = 'https://liturgia.up.railway.app/v2';
   
   private cache: Map<string, { data: LiturgiaDiaria; timestamp: number }> = new Map();
   private readonly CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 horas
@@ -63,7 +63,7 @@ class LiturgiaService {
   }
 
   private async buscarLiturgiaGET(): Promise<LiturgiaDiaria> {
-    const response = await fetch(`${this.API_BASE_URL}/api/liturgia`, {
+    const response = await fetch(`${this.API_BASE_URL}/`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -79,19 +79,17 @@ class LiturgiaService {
   }
 
   private async buscarLiturgiaPOST(data: Date): Promise<LiturgiaDiaria> {
-    const payload = {
-      ano: data.getFullYear().toString(),
-      mes: String(data.getMonth() + 1).padStart(2, '0'),
-      dia: String(data.getDate()).padStart(2, '0'),
-    };
+    // Formatar data como DD-MM-YYYY
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    const dataFormatada = `${dia}-${mes}-${ano}`;
 
-    const response = await fetch(`${this.API_BASE_URL}/api/liturgia`, {
-      method: 'POST',
+    const response = await fetch(`${this.API_BASE_URL}/${dataFormatada}`, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -105,55 +103,74 @@ class LiturgiaService {
   private normalizarDados(dados: any): LiturgiaDiaria {
     const leituras: LeituraLiturgica[] = [];
 
-    if (dados.primeiraLeitura || dados.primeira_leitura) {
-      const leitura = dados.primeiraLeitura || dados.primeira_leitura;
+    // A API retorna leituras como arrays, pegamos o primeiro elemento
+    if (dados.leituras?.primeiraLeitura && dados.leituras.primeiraLeitura.length > 0) {
+      const leitura = dados.leituras.primeiraLeitura[0];
       leituras.push({
         tipo: 'primeira',
         titulo: leitura.titulo || 'Primeira Leitura',
-        referencia: leitura.referencia || leitura.ref || '',
-        texto: leitura.texto || leitura.text || '',
+        referencia: leitura.referencia || '',
+        texto: leitura.texto || '',
       });
     }
 
-    if (dados.salmo) {
+    if (dados.leituras?.salmo && dados.leituras.salmo.length > 0) {
+      const salmo = dados.leituras.salmo[0];
+      const textoSalmo = salmo.refrao 
+        ? `Refrão: ${salmo.refrao}\n\n${salmo.texto || ''}`
+        : salmo.texto || '';
+      
       leituras.push({
         tipo: 'salmo',
-        titulo: dados.salmo.titulo || 'Salmo Responsorial',
-        referencia: dados.salmo.referencia || dados.salmo.ref || '',
-        texto: dados.salmo.texto || dados.salmo.text || '',
+        titulo: 'Salmo Responsorial',
+        referencia: salmo.referencia || '',
+        texto: textoSalmo,
       });
     }
 
-    if (dados.segundaLeitura || dados.segunda_leitura) {
-      const leitura = dados.segundaLeitura || dados.segunda_leitura;
+    if (dados.leituras?.segundaLeitura && dados.leituras.segundaLeitura.length > 0) {
+      const leitura = dados.leituras.segundaLeitura[0];
       leituras.push({
         tipo: 'segunda',
         titulo: leitura.titulo || 'Segunda Leitura',
-        referencia: leitura.referencia || leitura.ref || '',
-        texto: leitura.texto || leitura.text || '',
+        referencia: leitura.referencia || '',
+        texto: leitura.texto || '',
       });
     }
 
-    if (dados.evangelho) {
+    if (dados.leituras?.evangelho && dados.leituras.evangelho.length > 0) {
+      const leitura = dados.leituras.evangelho[0];
       leituras.push({
         tipo: 'evangelho',
-        titulo: dados.evangelho.titulo || 'Evangelho',
-        referencia: dados.evangelho.referencia || dados.evangelho.ref || '',
-        texto: dados.evangelho.texto || dados.evangelho.text || '',
+        titulo: leitura.titulo || 'Evangelho',
+        referencia: leitura.referencia || '',
+        texto: leitura.texto || '',
       });
     }
 
-    const cor = this.determinarCor(dados.cor || dados.corLiturgica || '');
+    const cor = this.determinarCor(dados.cor || '');
 
     return {
-      data: dados.data ? new Date(dados.data) : new Date(),
-      dia: dados.dia || dados.data || new Date().toLocaleDateString('pt-BR'),
-      tempo: dados.tempo || dados.tempoLiturgico || dados.liturgia || 'Tempo Comum',
+      data: dados.data ? this.parseDataBrasileira(dados.data) : new Date(),
+      dia: dados.data || new Date().toLocaleDateString('pt-BR'),
+      tempo: dados.liturgia || 'Tempo Comum',
       cor,
       leituras,
-      reflexao: dados.reflexao || dados.comentario || undefined,
+      reflexao: dados.oracoes?.coleta || undefined,
       fonte: 'CNBB',
     };
+  }
+
+  private parseDataBrasileira(dataStr: string): Date {
+    // Converte data do formato DD/MM/YYYY para Date
+    const partes = dataStr.split('/');
+    if (partes.length === 3) {
+      const dia = parseInt(partes[0]);
+      const mes = parseInt(partes[1]) - 1; // Mês começa em 0
+      const ano = parseInt(partes[2]);
+      return new Date(ano, mes, dia);
+    }
+    return new Date();
   }
 
   private determinarCor(corTexto: string): 'verde' | 'roxo' | 'branco' | 'vermelho' | 'rosa' {
