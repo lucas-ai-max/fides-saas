@@ -13,6 +13,7 @@ import PrayNow from "./pages/PrayNow";
 import ExameConsciencia from "./pages/ExameConsciencia";
 import RealizarExame from "./pages/RealizarExame";
 import ExameConclusao from "./pages/ExameConclusao";
+import Igrejas from "./pages/Igrejas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,7 +35,7 @@ const App = () => (
           <Route path="/prayers" element={<Prayers />} />
           <Route path="/prayers/:id" element={<PrayerDetail />} />
           <Route path="/pray/:id" element={<PrayNow />} />
-          <Route path="/churches" element={<div className="p-6 text-center font-heading text-xl">Igrejas (Em breve)</div>} />
+          <Route path="/churches" element={<Igrejas />} />
           <Route path="/examination" element={<ExameConsciencia />} />
           <Route path="/examination/realizar" element={<RealizarExame />} />
           <Route path="/examination/conclusao" element={<ExameConclusao />} />
