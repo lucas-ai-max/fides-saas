@@ -8,123 +8,152 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Fides Catholic Design System - All colors in HSL */
+    /* Fides Mariano Design System - Inspirado em Nossa Senhora */
     
     /* Core Colors */
     --background: 0 0% 100%;
-    --foreground: 0 0% 17%;
-    --text-primary: 0 0% 17%;
-    --text-secondary: 0 0% 40%;
+    --foreground: 222 47% 11%;
+    --text-primary: 222 47% 11%;
+    --text-secondary: 215 16% 47%;
+    --text-tertiary: 214 32% 64%;
     
-    /* Brand Colors */
-    --contemplative-blue: 210 53% 25%;
-    --liturgical-gold: 42 40% 58%;
-    --hope-green: 145 27% 38%;
-    --stone-gray: 40 11% 96%;
+    /* Azul Mariano (Primary) - Manto de Maria */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 217 91% 67%;
+    --primary-lighter: 213 97% 75%;
+    --primary-dark: 224 76% 48%;
+    --primary-hover: 224 76% 48%;
+    
+    /* Branco Puro (Backgrounds) */
+    --background-primary: 0 0% 100%;
+    --background-secondary: 0 0% 98%;
+    --background-soft: 0 0% 96%;
+    
+    /* Dourado Celestial (Accent) - Auréola */
+    --accent: 38 92% 50%;
+    --accent-foreground: 222 47% 11%;
+    --accent-light: 43 96% 56%;
+    --accent-dark: 32 95% 44%;
+    
+    /* Azul Céu (Complementar) */
+    --sky-blue: 199 89% 60%;
+    --sky-light: 198 93% 73%;
+    
+    /* Cinzas Neutros */
+    --gray-text: 215 16% 47%;
+    --gray-medium: 214 32% 64%;
+    --gray-light: 214 32% 91%;
+    --gray-disabled: 218 27% 84%;
     
     /* Semantic Tokens */
-    --primary: 210 53% 25%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 53% 20%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 217 91% 60%;
     
-    --secondary: 40 11% 96%;
-    --secondary-foreground: 210 53% 25%;
-    
-    --accent: 42 40% 58%;
-    --accent-foreground: 210 53% 25%;
-    --accent-light: 42 40% 95%;
-    
-    --success: 145 27% 38%;
+    --success: 158 64% 52%;
     --success-foreground: 0 0% 100%;
+    --success-light: 152 69% 61%;
     
-    --muted: 40 11% 96%;
-    --muted-foreground: 0 0% 40%;
+    --warning: 38 92% 50%;
+    --warning-light: 43 96% 56%;
+    
+    --error: 4 90% 58%;
+    --error-light: 4 93% 69%;
+    
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
     
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 17%;
+    --card-foreground: 222 47% 11%;
     
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 210 53% 25%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
     
-    --destructive: 0 84% 60%;
+    --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 17%;
+    --popover-foreground: 222 47% 11%;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 53% 25%), hsl(210 53% 35%));
-    --gradient-gold: linear-gradient(135deg, hsl(42 40% 58%), hsl(42 50% 68%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(40 11% 96%));
+    --gradient-mariano: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 67%));
+    --gradient-gold: linear-gradient(135deg, hsl(38 92% 50%), hsl(43 96% 56%));
+    --gradient-sky: linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 60%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 96%));
     
     /* Shadows */
-    --shadow-elegant: 0 2px 8px hsl(0 0% 0% / 0.08);
-    --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.12);
-    --shadow-large: 0 8px 32px hsl(0 0% 0% / 0.16);
+    --shadow-xs: 0 1px 2px hsl(222 47% 11% / 0.04);
+    --shadow-sm: 0 1px 3px hsl(222 47% 11% / 0.08);
+    --shadow-md: 0 4px 12px hsl(217 91% 60% / 0.12);
+    --shadow-lg: 0 8px 24px hsl(217 91% 60% / 0.16);
+    --shadow-xl: 0 12px 32px hsl(222 47% 11% / 0.12);
+    --shadow-mariano: 0 4px 14px hsl(217 91% 60% / 0.25);
+    --shadow-gold: 0 4px 16px hsl(38 92% 50% / 0.3);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s ease;
     
-    --radius: 0.5rem;
+    --radius: 0.75rem;
     
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 17%;
-    --sidebar-primary: 210 53% 25%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 40 11% 96%;
-    --sidebar-accent-foreground: 210 53% 25%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 42 40% 58%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 224 71% 17%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 26% 24%;
+    --sidebar-ring: 38 92% 50%;
     
     /* ChatGPT-style dark theme colors - HSL format */
-    --chat-sidebar: 0 0% 9%;
-    --chat-main: 0 0% 13%;
-    --chat-input: 0 0% 18%;
+    --chat-sidebar: 222 47% 11%;
+    --chat-main: 220 26% 14%;
+    --chat-input: 217 19% 27%;
   }
 
   .dark {
-    --background: 210 53% 10%;
+    --background: 222 47% 11%;
     --foreground: 0 0% 98%;
     --text-primary: 0 0% 98%;
-    --text-secondary: 0 0% 70%;
+    --text-secondary: 214 32% 64%;
     
-    --primary: 0 0% 98%;
-    --primary-foreground: 210 53% 25%;
-    --primary-hover: 0 0% 90%;
+    --primary: 217 91% 67%;
+    --primary-foreground: 222 47% 11%;
+    --primary-hover: 213 97% 75%;
     
-    --secondary: 210 53% 15%;
+    --secondary: 224 71% 17%;
     --secondary-foreground: 0 0% 98%;
     
-    --accent: 42 40% 58%;
-    --accent-foreground: 210 53% 10%;
-    --accent-light: 42 40% 20%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 222 47% 11%;
+    --accent-light: 32 95% 44%;
     
-    --card: 210 53% 12%;
+    --card: 220 26% 14%;
     --card-foreground: 0 0% 98%;
     
-    --border: 210 53% 20%;
-    --input: 210 53% 20%;
-    --ring: 42 40% 58%;
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 38 92% 50%;
     
-    --muted: 210 53% 15%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 224 71% 17%;
+    --muted-foreground: 214 32% 64%;
     
-    --sidebar-background: 210 53% 10%;
+    --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 42 40% 58%;
-    --sidebar-primary-foreground: 210 53% 10%;
-    --sidebar-accent: 210 53% 15%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 224 71% 17%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 210 53% 20%;
-    --sidebar-ring: 42 40% 58%;
+    --sidebar-border: 217 19% 27%;
+    --sidebar-ring: 38 92% 50%;
   }
 
   /* ChatGPT-style dark theme colors */
   .chat-dark {
-    --chat-sidebar: 0 0% 9%; /* #171717 */
-    --chat-main: 0 0% 13%; /* #212121 */
-    --chat-input: 0 0% 18%; /* #2f2f2f */
+    --chat-sidebar: 222 47% 11%;
+    --chat-main: 220 26% 14%;
+    --chat-input: 217 19% 27%;
   }
 }
 
@@ -145,7 +174,7 @@ All colors MUST be HSL.
 @layer utilities {
   /* Typography Utilities */
   .font-heading {
-    font-family: 'Crimson Text', serif;
+    font-family: 'Playfair Display', serif;
   }
   
   .font-body {
@@ -195,6 +224,24 @@ All colors MUST be HSL.
     to {
       opacity: 1;
       transform: scale(1);
+    }
+  }
+  
+  @keyframes gentleGlow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(37, 99, 235, 0.3);
+    }
+  }
+  
+  @keyframes breathe {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
     }
   }
 }
