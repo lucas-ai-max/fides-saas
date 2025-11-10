@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,8 +14,11 @@ import {
   Library,
   Target,
   Users,
-  Flame
+  Flame,
+  Loader2,
+  ArrowRight
 } from "lucide-react";
+import { liturgiaService } from "@/services/liturgiaService";
 
 const Home = () => {
   const [greeting] = useState(() => {
@@ -24,6 +27,34 @@ const Home = () => {
     if (hour < 18) return "Boa tarde";
     return "Boa noite";
   });
+
+  const [liturgiaPreview, setLiturgiaPreview] = useState({
+    texto: '',
+    referencia: '',
+    loading: true,
+  });
+
+  useEffect(() => {
+    liturgiaService.buscarLiturgiaDoDia()
+      .then((liturgia) => {
+        const evangelho = liturgia.leituras.find((l) => l.tipo === 'evangelho');
+        if (evangelho) {
+          setLiturgiaPreview({
+            texto: evangelho.texto.substring(0, 150) + '...',
+            referencia: evangelho.referencia,
+            loading: false,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao carregar liturgia preview:', error);
+        setLiturgiaPreview({
+          texto: 'Não foi possível carregar a liturgia do dia',
+          referencia: '',
+          loading: false,
+        });
+      });
+  }, []);
 
   const quickAccess = [
     { icon: MessageCircle, label: "Catequista", link: "/catechist", color: "text-primary" },
@@ -67,27 +98,38 @@ const Home = () => {
         </div>
 
         {/* Liturgia de Hoje */}
-        <Card className="p-6 bg-gradient-to-br from-card to-stone-gray border-l-4 border-l-liturgical-gold shadow-md hover:shadow-lg transition-shadow">
-          <div className="flex items-start gap-4">
-            <BookOpen className="h-6 w-6 text-liturgical-gold flex-shrink-0 mt-1" />
-            <div className="space-y-3 flex-1">
-              <h3 className="font-heading text-xl font-semibold text-primary">
-                📖 Liturgia de Hoje
-              </h3>
-              <p className="text-foreground font-body leading-relaxed line-clamp-3">
-                "Ouça, Israel! O Senhor nosso Deus é o único Senhor. Amarás o Senhor teu Deus de todo o teu coração..."
-              </p>
-              <p className="text-sm text-liturgical-gold font-body">
-                Marcos 12, 28b-34
-              </p>
-              <Link to="/liturgy">
-                <Button variant="link" className="p-0 h-auto text-primary hover:text-primary/80">
-                  Ler reflexão completa →
-                </Button>
-              </Link>
+        <Link to="/liturgy">
+          <Card className="p-6 bg-gradient-to-br from-card to-stone-gray border-l-4 border-l-liturgical-gold shadow-md hover:shadow-lg transition-all cursor-pointer">
+            <div className="flex items-start gap-4">
+              <BookOpen className="h-6 w-6 text-liturgical-gold flex-shrink-0 mt-1" />
+              <div className="space-y-3 flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-heading text-xl font-semibold text-primary">
+                    📖 Liturgia de Hoje
+                  </h3>
+                  <ArrowRight className="w-5 h-5 text-accent flex-shrink-0" />
+                </div>
+                {liturgiaPreview.loading ? (
+                  <div className="flex items-center gap-2 py-4">
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Carregando liturgia da CNBB...</span>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-foreground font-body leading-relaxed line-clamp-3">
+                      {liturgiaPreview.texto}
+                    </p>
+                    {liturgiaPreview.referencia && (
+                      <p className="text-sm text-liturgical-gold font-body">
+                        {liturgiaPreview.referencia}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </Link>
 
         {/* Progresso do Plano */}
         <Card className="p-6 shadow-md hover:shadow-lg transition-shadow">
