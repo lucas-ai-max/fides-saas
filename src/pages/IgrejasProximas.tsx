@@ -292,20 +292,24 @@ export default function IgrejasProximas() {
 
                 {/* Botões de Ação */}
                 <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => navegarPara(igreja)}
-                    className="px-4 py-2.5 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 font-medium"
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${igreja.latitude},${igreja.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2.5 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 font-medium no-underline"
                   >
                     <Navigation className="w-4 h-4" />
                     Como chegar
-                  </button>
-                  <button
-                    onClick={() => verNoMapa(igreja)}
-                    className="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium"
+                  </a>
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${igreja.latitude}&mlon=${igreja.longitude}&zoom=18`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium no-underline"
                   >
                     <MapPin className="w-4 h-4" />
                     Ver no mapa
-                  </button>
+                  </a>
                 </div>
 
                 {/* Botão Compartilhar */}
