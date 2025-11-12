@@ -1,4 +1,4 @@
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export function ThemeToggle() {
@@ -15,19 +15,7 @@ export function ThemeToggle() {
         }`}
         aria-label="Modo claro"
       >
-        <Sun className="w-4 h-4" />
-      </button>
-      
-      <button
-        onClick={() => setTheme('system')}
-        className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all ${
-          theme === 'system'
-            ? 'bg-background-elevated text-primary shadow-sm'
-            : 'text-text-tertiary hover:text-text-secondary hover:bg-background-tertiary'
-        }`}
-        aria-label="Usar tema do sistema"
-      >
-        <Monitor className="w-4 h-4" />
+      <Sun className="w-4 h-4" />
       </button>
       
       <button
