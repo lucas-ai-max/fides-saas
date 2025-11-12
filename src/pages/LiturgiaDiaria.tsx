@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import FontSizeControl from '@/components/FontSizeControl';
 import { useFontSize } from '@/hooks/useFontSize';
 import { BiblicalText } from '@/components/BiblicalText';
+import { BottomNav } from '@/components/BottomNav';
 
 const LiturgiaDiaria = () => {
   const navigate = useNavigate();
@@ -141,7 +142,7 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
   };
 
   return (
-    <div className="min-h-screen bg-background-secondary pb-24">
+    <div className="min-h-screen bg-background-secondary pb-28">
       {/* Header */}
       <header className="bg-card border-b border-gray-light sticky top-0 z-20 shadow-sm">
         <div className="flex items-center justify-between p-4">
@@ -322,6 +323,9 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
           </p>
         </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 };

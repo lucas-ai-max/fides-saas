@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { placesService, IgrejaCatolica } from '../services/placesService';
 import { toast } from 'sonner';
+import { BottomNav } from '@/components/BottomNav';
 
 // Detecta se é dispositivo móvel
 const isMobile = () => {
@@ -159,7 +160,7 @@ export default function IgrejasProximas() {
 
   // CONTEÚDO PRINCIPAL
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background pb-8">
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background pb-28">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card border-b shadow-sm">
         <div className="flex items-center justify-between p-4">
@@ -485,6 +486,9 @@ export default function IgrejasProximas() {
           </p>
         </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 }

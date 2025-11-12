@@ -3,6 +3,7 @@ import { ArrowLeft, Search, Star, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { prayersData, categories, intentions } from '@/data/prayers';
 import { useFavorites } from '@/hooks/usePrayers';
+import { BottomNav } from '@/components/BottomNav';
 
 const Prayers = () => {
   const navigate = useNavigate();
@@ -118,7 +119,7 @@ const Prayers = () => {
       </div>
 
       {/* Lista de Orações */}
-      <div className="px-4 pb-20 space-y-3">
+      <div className="px-4 pb-28 space-y-3">
         {filteredPrayers.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-secondary text-lg">Nenhuma oração encontrada</p>
@@ -167,6 +168,9 @@ const Prayers = () => {
           ))
         )}
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 };

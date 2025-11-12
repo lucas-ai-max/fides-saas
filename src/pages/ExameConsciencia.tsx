@@ -1,6 +1,7 @@
 import { ArrowLeft, Lock, Calendar, Church } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useExame } from '@/hooks/useExame';
+import { BottomNav } from '@/components/BottomNav';
 
 const ExameConsciencia = () => {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ const ExameConsciencia = () => {
   const daysSince = getDaysSinceLastExam();
 
   return (
-    <div className="min-h-screen bg-secondary-bg">
+    <div className="min-h-screen bg-secondary-bg pb-28">
       {/* Header */}
       <div className="bg-white border-b border-border p-4">
         <div className="flex items-center max-w-3xl mx-auto">
@@ -118,6 +119,9 @@ const ExameConsciencia = () => {
           </div>
         </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 };

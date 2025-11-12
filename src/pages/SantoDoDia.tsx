@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bookmark, Share2, Loader2, AlertCircle } from 'lucide-react';
 import { santoService, SantoDoDia } from '@/services/santoService';
 import { toast } from 'sonner';
+import { BottomNav } from '@/components/BottomNav';
 
 export default function SantoDoDiaPage() {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ export default function SantoDoDiaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background pb-8">
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background pb-28">
       <header className="sticky top-0 z-50 bg-card border-b shadow-sm">
         <div className="flex items-center justify-between p-4">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-muted rounded-lg transition-colors">
@@ -207,6 +208,9 @@ export default function SantoDoDiaPage() {
           📚 Fonte: {santo.fonte}
         </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 }
