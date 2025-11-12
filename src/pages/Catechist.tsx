@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Sparkles } from 'lucide-react';
+import { Send, Loader2, Sparkles, Menu, PenSquare } from 'lucide-react';
 import { conversationService, Message } from '@/services/conversationService';
 import MarkdownMessage from '@/components/MarkdownMessage';
 import { BottomNav } from '@/components/BottomNav';
@@ -99,148 +99,138 @@ const Catechist = () => {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Fixed Header with AI Avatar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary via-primary-600 to-primary-700 border-b border-primary-400/20 shadow-lg">
-        <div className="px-4 py-4 flex items-center gap-3">
-          {/* AI Avatar */}
-          <div className="relative">
-            <div className="w-11 h-11 rounded-full bg-white/95 shadow-lg flex items-center justify-center">
-              <span className="text-2xl">✝️</span>
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-success rounded-full border-2 border-primary-700" />
-          </div>
+    <div className="flex flex-col h-screen bg-[#1a1a1a] dark:bg-[#1a1a1a]">
+      {/* Fixed Header - ChatGPT Style */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1a] border-b border-white/10">
+        <div className="px-4 py-3 flex items-center justify-between">
+          {/* Menu Button */}
+          <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+            <Menu className="w-5 h-5 text-white/70" />
+          </button>
           
           {/* Title */}
-          <div className="flex-1">
-            <h1 className="text-white font-heading font-semibold text-lg leading-tight">
-              Catequista IA
-            </h1>
-            <p className="text-primary-100 text-xs">
-              Sempre disponível para você
-            </p>
-          </div>
+          <h1 className="text-white font-medium text-base">
+            Catequista IA
+          </h1>
 
-          {/* Sparkle Icon */}
-          <div className="p-2 rounded-full bg-white/10">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
+          {/* New Chat Button */}
+          <button 
+            onClick={() => {
+              setMessages([]);
+              setCurrentThreadId(null);
+            }}
+            className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+          >
+            <PenSquare className="w-5 h-5 text-white/70" />
+          </button>
         </div>
       </header>
 
       {/* Messages Area with top padding for fixed header */}
-      <div className="flex-1 overflow-y-auto pt-[76px] pb-[140px]">
+      <div className="flex-1 overflow-y-auto pt-[52px] pb-[140px]">
         {messages.length === 0 ? (
-          // Empty State
+          // Empty State - ChatGPT Style
           <div className="flex flex-col items-center justify-center min-h-full px-4 py-12">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 shadow-lg">
-              <span className="text-5xl">✝️</span>
+            {/* Loading Icon */}
+            <div className="w-16 h-16 mb-8 flex items-center justify-center">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-white/10 border-t-white/30 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl">✝️</span>
+                </div>
+              </div>
             </div>
-            
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-3 text-center">
-              Bem-vindo ao Catequista IA
-            </h2>
-            
-            <p className="text-muted-foreground text-center max-w-sm mb-8 text-sm leading-relaxed">
-              Alimentado pela sabedoria do Catecismo, Bíblia e ensinamentos dos Santos. Escolha uma pergunta ou faça a sua:
-            </p>
 
-            {/* Suggested Prompts as Cards */}
-            <div className="w-full max-w-md space-y-3">
+            {/* Suggested Prompts - ChatGPT Style */}
+            <div className="w-full max-w-2xl space-y-2 px-2">
               {suggestedPrompts.map((prompt, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(prompt)}
-                  className="w-full text-left p-4 rounded-2xl bg-card hover:bg-accent/5 border border-border hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md group"
+                  className="w-full text-left px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-200"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl group-hover:scale-110 transition-transform">
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg mt-0.5">
                       {prompt.charAt(0)}
                     </span>
-                    <span className="text-sm font-medium text-foreground flex-1">
-                      {prompt.replace(/^[✝️📿🍞🙏]\s*/, '')}
-                    </span>
+                    <div className="flex-1">
+                      <span className="text-sm text-white/90 font-medium">
+                        {prompt.replace(/^[✝️📿🍞🙏]\s*/, '').split(' ').slice(0, 3).join(' ')}
+                      </span>
+                      <p className="text-xs text-white/50 mt-0.5">
+                        {prompt.replace(/^[✝️📿🍞🙏]\s*/, '').split(' ').slice(3).join(' ')}
+                      </p>
+                    </div>
                   </div>
                 </button>
               ))}
             </div>
           </div>
         ) : (
-          // Messages with Bubbles
-          <div className="px-4 py-6 space-y-4">
+          // Messages - ChatGPT Style
+          <div className="py-6 space-y-6 max-w-3xl mx-auto w-full">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${
-                  message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                className={`px-4 ${
+                  message.role === 'assistant' ? 'bg-white/[0.02]' : ''
                 }`}
               >
-                {/* Avatar */}
-                <div className="flex-shrink-0">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md ${
-                    message.role === 'user' 
-                      ? 'bg-gradient-to-br from-primary to-primary-600' 
-                      : 'bg-white dark:bg-gray-800'
-                  }`}>
-                    {message.role === 'user' ? (
-                      <span className="text-white text-sm font-semibold">V</span>
-                    ) : (
-                      <span className="text-xl">✝️</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Message Bubble */}
-                <div className={`flex-1 max-w-[85%] ${
-                  message.role === 'user' ? 'items-end' : 'items-start'
-                }`}>
-                  <div className={`rounded-2xl px-4 py-3 shadow-sm ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-br from-primary to-primary-600 text-white rounded-tr-sm'
-                      : 'bg-card border border-border rounded-tl-sm'
-                  }`}>
-                    <MarkdownMessage 
-                      content={message.content}
-                      isAssistant={message.role === 'assistant'}
-                      enableTyping={message.role === 'assistant' && messages[messages.length - 1]?.id === message.id}
-                    />
-                  </div>
-
-                  {/* Sources */}
-                  {message.sources && message.sources.length > 0 && (
-                    <div className="mt-2 space-y-1.5">
-                      {message.sources.map((source, idx) => (
-                        <div
-                          key={idx}
-                          className="text-xs bg-muted/50 border border-border rounded-lg px-3 py-2 flex items-center gap-2"
-                        >
-                          <span>📖</span>
-                          <span className="text-muted-foreground">{source.reference}</span>
-                        </div>
-                      ))}
+                <div className="max-w-3xl mx-auto py-5">
+                  <div className="flex gap-4">
+                    {/* Avatar */}
+                    <div className="flex-shrink-0 w-8 h-8 rounded-sm flex items-center justify-center bg-white/5">
+                      {message.role === 'user' ? (
+                        <span className="text-white text-sm font-semibold">V</span>
+                      ) : (
+                        <span className="text-lg">✝️</span>
+                      )}
                     </div>
-                  )}
+
+                    {/* Message Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white/90 leading-7">
+                        <MarkdownMessage 
+                          content={message.content}
+                          isAssistant={message.role === 'assistant'}
+                          enableTyping={message.role === 'assistant' && messages[messages.length - 1]?.id === message.id}
+                        />
+                      </div>
+
+                      {/* Sources */}
+                      {message.sources && message.sources.length > 0 && (
+                        <div className="mt-3 space-y-1.5">
+                          {message.sources.map((source, idx) => (
+                            <div
+                              key={idx}
+                              className="text-xs bg-white/5 border border-white/10 rounded-lg px-3 py-2 flex items-center gap-2"
+                            >
+                              <span>📖</span>
+                              <span className="text-white/60">{source.reference}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
 
-            {/* Typing Indicator */}
+            {/* Typing Indicator - ChatGPT Style */}
             {isLoading && (
-              <div className="flex gap-3">
-                <div className="flex-shrink-0">
-                  <div className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-md">
-                    <span className="text-xl">✝️</span>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm inline-block">
-                    <div className="flex items-center gap-2">
+              <div className="px-4 bg-white/[0.02]">
+                <div className="max-w-3xl mx-auto py-5">
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-sm flex items-center justify-center bg-white/5">
+                      <span className="text-lg">✝️</span>
+                    </div>
+                    <div className="flex-1 pt-1">
                       <div className="flex gap-1">
-                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
-                      <span className="text-xs text-muted-foreground">Pensando...</span>
                     </div>
                   </div>
                 </div>
@@ -252,39 +242,39 @@ const Catechist = () => {
         )}
       </div>
 
-      {/* Fixed Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-background/95 border-t border-border pb-20">
-        <div className="px-4 py-4">
-          <div className="relative bg-card rounded-3xl border-2 border-border focus-within:border-primary transition-all shadow-lg">
+      {/* Fixed Input Area - ChatGPT Style */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a] to-[#1a1a1a]/95 pb-20">
+        <div className="px-4 py-4 max-w-3xl mx-auto">
+          <div className="relative bg-[#2f2f2f] rounded-3xl border border-white/10 focus-within:border-white/20 transition-all shadow-lg">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Faça sua pergunta..."
+              placeholder="Mensagem Catequista IA"
               disabled={isLoading}
-              className="w-full bg-transparent text-foreground placeholder-muted-foreground px-5 py-4 pr-14 focus:outline-none resize-none max-h-32 disabled:opacity-50 font-body text-[15px] leading-relaxed"
+              className="w-full bg-transparent text-white placeholder-white/40 px-5 py-4 pr-14 focus:outline-none resize-none max-h-32 disabled:opacity-50 text-[15px] leading-relaxed"
               rows={1}
             />
             
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className={`absolute right-2 bottom-2 p-2.5 rounded-full transition-all shadow-md ${
+              className={`absolute right-2 bottom-2 p-2.5 rounded-full transition-all ${
                 input.trim() && !isLoading
-                  ? 'bg-gradient-to-r from-primary to-primary-600 text-white hover:shadow-lg hover:scale-105'
-                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  ? 'bg-white text-[#1a1a1a] hover:bg-white/90'
+                  : 'bg-white/10 text-white/30 cursor-not-allowed'
               }`}
             >
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Send className="w-5 h-5" />
+                <Send className="w-4 h-4" />
               )}
             </button>
           </div>
 
-          <p className="text-[11px] text-muted-foreground/60 text-center mt-2">
+          <p className="text-[11px] text-white/40 text-center mt-2.5">
             O Catequista IA pode cometer erros. Verifique informações importantes.
           </p>
         </div>
