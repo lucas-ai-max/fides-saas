@@ -23,7 +23,7 @@ const MarkdownMessage = ({ content, isAssistant = false, enableTyping = false }:
     setDisplayedContent('');
     
     let currentIndex = 0;
-    const typingSpeed = 20; // ms por caractere
+    const typingSpeed = 10; // ms por caractere - mais rápido
 
     const interval = setInterval(() => {
       if (currentIndex < content.length) {
@@ -123,9 +123,6 @@ const MarkdownMessage = ({ content, isAssistant = false, enableTyping = false }:
       >
         {displayedContent}
       </ReactMarkdown>
-      {isTyping && (
-        <span className="inline-block w-1 h-4 bg-accent animate-pulse ml-0.5"></span>
-      )}
     </div>
   );
 };
