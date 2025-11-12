@@ -317,16 +317,6 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
               {liturgia.reflexao}
             </p>
           </div>
-
-          {/* Footer */}
-          <div className="px-5 py-3 bg-accent/5 border-t border-accent/20">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-sans text-accent-dark font-medium flex items-center gap-1">
-                <span>⏱️</span>
-                3 min de leitura
-              </span>
-            </div>
-          </div>
         </div>
       )}
 
