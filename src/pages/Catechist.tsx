@@ -1,17 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Menu, Paperclip, ArrowUp } from 'lucide-react';
-import { conversationService, Message, Conversation } from '@/services/conversationService';
-import ConversationSidebar from '@/components/ConversationSidebar';
+import { Send, Loader2, Sparkles } from 'lucide-react';
+import { conversationService, Message } from '@/services/conversationService';
 import MarkdownMessage from '@/components/MarkdownMessage';
+import { BottomNav } from '@/components/BottomNav';
 
 const Catechist = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -22,11 +19,6 @@ const Catechist = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  useEffect(() => {
-    const loadedConversations = conversationService.getConversations();
-    setConversations(loadedConversations);
-  }, []);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -73,20 +65,7 @@ const Catechist = () => {
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      const newThreadId = data.threadId;
-      setCurrentThreadId(newThreadId);
-
-      if (!currentConversation) {
-        const newConv = conversationService.createNewConversation(messageToSend, newThreadId);
-        conversationService.addMessages(newConv.id, userMessage, assistantMessage);
-        setCurrentConversation(newConv);
-        setConversations(conversationService.getConversations());
-      } else {
-        conversationService.addMessages(currentConversation.id, userMessage, assistantMessage);
-        setConversations(conversationService.getConversations());
-        const updated = conversationService.getConversation(currentConversation.id);
-        setCurrentConversation(updated);
-      }
+      setCurrentThreadId(data.threadId);
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
@@ -108,40 +87,8 @@ const Catechist = () => {
     }
   };
 
-  const handleNewConversation = () => {
-    setCurrentConversation(null);
-    setCurrentThreadId(null);
-    setMessages([]);
-    setSidebarOpen(false);
-  };
-
-  const handleSelectConversation = (conversationId: string) => {
-    const conversation = conversationService.getConversation(conversationId);
-    if (!conversation) return;
-
-    setMessages([...conversation.messages]);
-    setCurrentConversation(conversation);
-    setCurrentThreadId(conversation.threadId);
-    setSidebarOpen(false);
-  };
-
-  const handleDeleteConversation = (conversationId: string) => {
-    conversationService.deleteConversation(conversationId);
-    setConversations(conversationService.getConversations());
-
-    if (currentConversation?.id === conversationId) {
-      handleNewConversation();
-    }
-  };
-
-  const handleRenameConversation = (conversationId: string, newTitle: string) => {
-    conversationService.renameConversation(conversationId, newTitle);
-    setConversations(conversationService.getConversations());
-
-    if (currentConversation?.id === conversationId) {
-      const updated = conversationService.getConversation(conversationId);
-      setCurrentConversation(updated);
-    }
+  const handleSuggestionClick = (prompt: string) => {
+    setInput(prompt.replace(/^[✝️📿🍞🙏]\s*/, ''));
   };
 
   const suggestedPrompts = [
@@ -152,189 +99,199 @@ const Catechist = () => {
   ];
 
   return (
-    <div className="flex h-screen text-white overflow-hidden" style={{ backgroundColor: 'hsl(var(--chat-main))' }}>
-      {/* Sidebar */}
-      <ConversationSidebar
-        conversations={conversations}
-        currentConversationId={currentConversation?.id || null}
-        onSelectConversation={handleSelectConversation}
-        onDeleteConversation={handleDeleteConversation}
-        onRenameConversation={handleRenameConversation}
-        onNewConversation={handleNewConversation}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-      />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col relative">
-        {/* Header Mobile */}
-        <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-          <h1 className="text-lg font-semibold font-heading">Fides Catequista</h1>
-          <div className="w-10" />
-        </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto">
-          {messages.length === 0 ? (
-            // Empty State
-            <div className="flex flex-col items-center justify-center h-full px-4 pb-32">
-              <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-6">
-                <span className="text-4xl">✝️</span>
-              </div>
-              <h1 className="text-4xl font-heading font-semibold mb-4 text-center">
-                Que bom te ver aqui!
-              </h1>
-              <p className="text-white/60 text-center max-w-md mb-8">
-                Sou o Catequista, alimentado pela sabedoria do Catecismo, Bíblia e ensinamentos dos Santos. Como posso ajudar você hoje?
-              </p>
-
-              {/* Suggested Prompts */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
-                {suggestedPrompts.map((prompt, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setInput(prompt)}
-                    className="text-left p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
-                  >
-                    <span className="text-sm">{prompt}</span>
-                  </button>
-                ))}
-              </div>
+    <div className="flex flex-col h-screen bg-background">
+      {/* Fixed Header with AI Avatar */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary via-primary-600 to-primary-700 border-b border-primary-400/20 shadow-lg">
+        <div className="px-4 py-4 flex items-center gap-3">
+          {/* AI Avatar */}
+          <div className="relative">
+            <div className="w-11 h-11 rounded-full bg-white/95 shadow-lg flex items-center justify-center">
+              <span className="text-2xl">✝️</span>
             </div>
-          ) : (
-            // Messages
-            <div className="max-w-3xl mx-auto px-4 py-8">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`mb-8 ${
-                    message.role === 'user' ? 'flex justify-end' : ''
-                  }`}
-                >
-                  <div className={`flex items-start space-x-4 max-w-full ${
-                    message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                  }`}>
-                    {/* Avatar */}
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                      message.role === 'user' 
-                        ? 'bg-accent text-accent-foreground' 
-                        : 'bg-white/10'
-                    }`}>
-                      {message.role === 'user' ? (
-                        <span className="text-sm font-semibold">V</span>
-                      ) : (
-                        <span className="text-lg">✝️</span>
-                      )}
-                    </div>
-
-                    {/* Message Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="mb-1">
-                        <span className="text-sm font-medium">
-                          {message.role === 'user' ? 'Você' : 'Catequista'}
-                        </span>
-                      </div>
-                      <MarkdownMessage 
-                        content={message.content}
-                        isAssistant={message.role === 'assistant'}
-                        enableTyping={message.role === 'assistant' && messages[messages.length - 1]?.id === message.id}
-                      />
-
-                      {/* Sources */}
-                      {message.sources && message.sources.length > 0 && (
-                        <div className="mt-4 space-y-2">
-                          {message.sources.map((source, idx) => (
-                            <div
-                              key={idx}
-                              className="text-sm bg-white/5 border border-white/10 rounded-lg p-3"
-                            >
-                              <span className="mr-2">📖</span>
-                              <span className="text-white/70">{source.reference}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Loading */}
-              {isLoading && (
-                <div className="mb-8">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                      <span className="text-lg">✝️</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="mb-1">
-                        <span className="text-sm font-medium">Catequista</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm text-white/60">Pensando...</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t border-white/10" style={{ backgroundColor: 'hsl(var(--chat-main))' }}>
-          <div className="max-w-3xl mx-auto px-4 py-4">
-            <div className="relative rounded-3xl border border-white/10 focus-within:border-white/20 transition-colors" style={{ backgroundColor: 'hsl(var(--chat-input))' }}>
-              <div className="flex items-end p-2">
-                <button className="p-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5">
-                  <Paperclip className="w-5 h-5" />
-                </button>
-
-                <textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  placeholder="Pergunte alguma coisa..."
-                  disabled={isLoading}
-                  className="flex-1 bg-transparent text-white placeholder-white/40 px-3 py-2.5 focus:outline-none resize-none max-h-[200px] disabled:opacity-50 font-body"
-                  rows={1}
-                  style={{ minHeight: '24px' }}
-                />
-
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  className={`p-2 rounded-lg transition-all ml-2 ${
-                    input.trim() && !isLoading
-                      ? 'bg-white text-black hover:bg-white/90'
-                      : 'bg-white/10 text-white/40 cursor-not-allowed'
-                  }`}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <ArrowUp className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <p className="text-xs text-white/30 text-center mt-3">
-              O Catequista pode cometer erros. Considere verificar informações importantes.
+            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-success rounded-full border-2 border-primary-700" />
+          </div>
+          
+          {/* Title */}
+          <div className="flex-1">
+            <h1 className="text-white font-heading font-semibold text-lg leading-tight">
+              Catequista IA
+            </h1>
+            <p className="text-primary-100 text-xs">
+              Sempre disponível para você
             </p>
           </div>
+
+          {/* Sparkle Icon */}
+          <div className="p-2 rounded-full bg-white/10">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+        </div>
+      </header>
+
+      {/* Messages Area with top padding for fixed header */}
+      <div className="flex-1 overflow-y-auto pt-[76px] pb-[140px]">
+        {messages.length === 0 ? (
+          // Empty State
+          <div className="flex flex-col items-center justify-center min-h-full px-4 py-12">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 shadow-lg">
+              <span className="text-5xl">✝️</span>
+            </div>
+            
+            <h2 className="text-2xl font-heading font-bold text-foreground mb-3 text-center">
+              Bem-vindo ao Catequista IA
+            </h2>
+            
+            <p className="text-muted-foreground text-center max-w-sm mb-8 text-sm leading-relaxed">
+              Alimentado pela sabedoria do Catecismo, Bíblia e ensinamentos dos Santos. Escolha uma pergunta ou faça a sua:
+            </p>
+
+            {/* Suggested Prompts as Cards */}
+            <div className="w-full max-w-md space-y-3">
+              {suggestedPrompts.map((prompt, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSuggestionClick(prompt)}
+                  className="w-full text-left p-4 rounded-2xl bg-card hover:bg-accent/5 border border-border hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md group"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl group-hover:scale-110 transition-transform">
+                      {prompt.charAt(0)}
+                    </span>
+                    <span className="text-sm font-medium text-foreground flex-1">
+                      {prompt.replace(/^[✝️📿🍞🙏]\s*/, '')}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          // Messages with Bubbles
+          <div className="px-4 py-6 space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${
+                  message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                }`}
+              >
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md ${
+                    message.role === 'user' 
+                      ? 'bg-gradient-to-br from-primary to-primary-600' 
+                      : 'bg-white dark:bg-gray-800'
+                  }`}>
+                    {message.role === 'user' ? (
+                      <span className="text-white text-sm font-semibold">V</span>
+                    ) : (
+                      <span className="text-xl">✝️</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Message Bubble */}
+                <div className={`flex-1 max-w-[85%] ${
+                  message.role === 'user' ? 'items-end' : 'items-start'
+                }`}>
+                  <div className={`rounded-2xl px-4 py-3 shadow-sm ${
+                    message.role === 'user'
+                      ? 'bg-gradient-to-br from-primary to-primary-600 text-white rounded-tr-sm'
+                      : 'bg-card border border-border rounded-tl-sm'
+                  }`}>
+                    <MarkdownMessage 
+                      content={message.content}
+                      isAssistant={message.role === 'assistant'}
+                      enableTyping={message.role === 'assistant' && messages[messages.length - 1]?.id === message.id}
+                    />
+                  </div>
+
+                  {/* Sources */}
+                  {message.sources && message.sources.length > 0 && (
+                    <div className="mt-2 space-y-1.5">
+                      {message.sources.map((source, idx) => (
+                        <div
+                          key={idx}
+                          className="text-xs bg-muted/50 border border-border rounded-lg px-3 py-2 flex items-center gap-2"
+                        >
+                          <span>📖</span>
+                          <span className="text-muted-foreground">{source.reference}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Typing Indicator */}
+            {isLoading && (
+              <div className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-md">
+                    <span className="text-xl">✝️</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm inline-block">
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <span className="text-xs text-muted-foreground">Pensando...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+      </div>
+
+      {/* Fixed Input Area */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-background/95 border-t border-border pb-20">
+        <div className="px-4 py-4">
+          <div className="relative bg-card rounded-3xl border-2 border-border focus-within:border-primary transition-all shadow-lg">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Faça sua pergunta..."
+              disabled={isLoading}
+              className="w-full bg-transparent text-foreground placeholder-muted-foreground px-5 py-4 pr-14 focus:outline-none resize-none max-h-32 disabled:opacity-50 font-body text-[15px] leading-relaxed"
+              rows={1}
+            />
+            
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className={`absolute right-2 bottom-2 p-2.5 rounded-full transition-all shadow-md ${
+                input.trim() && !isLoading
+                  ? 'bg-gradient-to-r from-primary to-primary-600 text-white hover:shadow-lg hover:scale-105'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+              }`}
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground/60 text-center mt-2">
+            O Catequista IA pode cometer erros. Verifique informações importantes.
+          </p>
         </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 };
