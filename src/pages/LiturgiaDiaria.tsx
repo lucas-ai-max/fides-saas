@@ -275,11 +275,6 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
                   >
                     {leitura.texto}
                   </p>
-
-                  <button className="mt-5 flex items-center gap-2 text-sm text-primary hover:text-primary-dark transition-colors font-sans font-medium">
-                    <Volume2 className="w-4 h-4" />
-                    <span>Ouvir leitura (em breve)</span>
-                  </button>
                 </div>
               )}
 
