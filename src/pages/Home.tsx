@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { BottomNav } from "@/components/BottomNav";
 import {
   Menu,
   Bell,
@@ -93,7 +94,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background-secondary to-background-soft pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background-secondary to-background-soft pb-28">
       {/* Header Mariano com Gradiente */}
       <header className="bg-gradient-to-br from-primary via-primary-light to-sky-blue px-6 pt-12 pb-20 rounded-b-[32px] shadow-xl relative overflow-hidden">
         {/* Efeito de luz sutil */}
@@ -295,27 +296,8 @@ const Home = () => {
         </Card>
       </div>
 
-      {/* Bottom Navigation - Moderno e Clean */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-gray-light shadow-xl">
-        <div className="flex items-center justify-around px-4 py-2.5 max-w-2xl mx-auto">
-          <Link to="/home" className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl bg-primary/10 min-w-[72px]">
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="text-xs font-body font-semibold text-primary">Início</span>
-          </Link>
-          <Link to="/plans" className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl hover:bg-gray-light/50 transition-colors min-w-[72px]">
-            <Target className="h-5 w-5 text-gray-medium" />
-            <span className="text-xs font-body font-medium text-gray-medium">Aprender</span>
-          </Link>
-          <Link to="/prayers" className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl hover:bg-gray-light/50 transition-colors min-w-[72px]">
-            <BookOpen className="h-5 w-5 text-gray-medium" />
-            <span className="text-xs font-body font-medium text-gray-medium">Orar</span>
-          </Link>
-          <Link to="/profile" className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl hover:bg-gray-light/50 transition-colors min-w-[72px]">
-            <Users className="h-5 w-5 text-gray-medium" />
-            <span className="text-xs font-body font-medium text-gray-medium">Perfil</span>
-          </Link>
-        </div>
-      </nav>
+      {/* Bottom Navigation Novo */}
+      <BottomNav />
     </div>
   );
 };

@@ -1,10 +1,52 @@
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-200", className)} {...props} />
-));
+const cardVariants = cva(
+  "rounded-2xl transition-all duration-200",
+  {
+    variants: {
+      variant: {
+        default: "border border-border bg-card shadow-sm",
+        elevated: "border border-border bg-card shadow-lg",
+        outline: "border-2 border-border bg-transparent",
+        ghost: "border-0 bg-transparent",
+        gradient: "border-0 bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 shadow-lg shadow-primary/30",
+      },
+      padding: {
+        none: "p-0",
+        sm: "p-4",
+        default: "p-6",
+        lg: "p-8",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      padding: "default",
+    },
+  },
+);
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {
+  interactive?: boolean;
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, padding, interactive, ...props }, ref) => (
+    <div 
+      ref={ref} 
+      className={cn(
+        cardVariants({ variant, padding }), 
+        interactive && "cursor-pointer hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]",
+        className
+      )} 
+      {...props} 
+    />
+  )
+);
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
