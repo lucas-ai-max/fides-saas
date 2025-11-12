@@ -5,7 +5,6 @@ import {
   Share2,
   Loader2,
   ChevronDown,
-  Volume2,
   AlertCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +12,7 @@ import { liturgiaService, type LiturgiaDiaria } from '@/services/liturgiaService
 import { toast } from 'sonner';
 import FontSizeControl from '@/components/FontSizeControl';
 import { useFontSize } from '@/hooks/useFontSize';
+import { BiblicalText } from '@/components/BiblicalText';
 
 const LiturgiaDiaria = () => {
   const navigate = useNavigate();
@@ -266,15 +266,11 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
                 <div className={`px-6 py-7 ${
                   isEvangelho ? 'bg-white/90 backdrop-blur-sm relative' : 'bg-card'
                 }`}>
-                  <p 
-                    className="font-serif texto-biblico whitespace-pre-line"
-                    style={{
-                      fontSize: fontConfig.body,
-                      lineHeight: fontConfig.lineHeight,
-                    }}
-                  >
-                    {leitura.texto}
-                  </p>
+                  <BiblicalText
+                    text={leitura.texto}
+                    fontSize={fontConfig.body}
+                    lineHeight={fontConfig.lineHeight}
+                  />
                 </div>
               )}
 
@@ -307,15 +303,12 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
 
           {/* Texto */}
           <div className="px-6 py-7 bg-white/70">
-            <p 
-              className="font-serif texto-biblico italic text-gray-800"
-              style={{
-                fontSize: fontConfig.body,
-                lineHeight: fontConfig.lineHeight,
-              }}
-            >
-              {liturgia.reflexao}
-            </p>
+            <BiblicalText
+              text={liturgia.reflexao}
+              fontSize={fontConfig.body}
+              lineHeight={fontConfig.lineHeight}
+              className="italic text-gray-800"
+            />
           </div>
         </div>
       )}
