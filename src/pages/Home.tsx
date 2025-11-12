@@ -216,12 +216,12 @@ const Home = () => {
       </header>
 
       {/* CONTEÚDO - Cards sobrepostos ao header */}
-      <div className="px-6 -mt-20 pb-28 space-y-6">
+      <div className="px-6 -mt-20 pb-28 space-y-6 relative z-20">
         {/* CARD: LITURGIA DO DIA */}
         <Card 
           variant="elevated" 
           padding="none" 
-          className="overflow-hidden"
+          className="overflow-hidden bg-card shadow-2xl"
           interactive
           onClick={() => navigate('/liturgy')}
         >
