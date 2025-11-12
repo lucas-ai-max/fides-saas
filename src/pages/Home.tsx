@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Menu,
   Bell,
@@ -104,6 +105,7 @@ const Home = () => {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex gap-3">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0">
               <Bell className="h-5 w-5" />
             </Button>

@@ -2,101 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* FIDES DESIGN SYSTEM - Enhanced with Light/Dark Theme Support */
 
 @layer base {
+  /* ===========================
+     LIGHT THEME (Default)
+     =========================== */
   :root {
-    /* Fides Mariano Design System - Inspirado em Nossa Senhora */
+    /* Primary - Azul Mariano */
+    --primary: 221 83% 53%;
+    --primary-light: 213 94% 68%;
+    --primary-foreground: 0 0% 100%;
     
-    /* Core Colors */
+    /* Accent - Dourado */
+    --accent: 32 95% 44%;
+    --accent-light: 43 96% 56%;
+    --accent-dark: 26 90% 37%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Backgrounds - Clean white system */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background-secondary: 0 0% 98%;
+    --background-tertiary: 0 0% 96%;
+    --background-elevated: 0 0% 100%;
+    --background-soft: 0 0% 97%;
+    --background-primary: 0 0% 100%;
+    
+    /* Text - High contrast */
     --text-primary: 222 47% 11%;
     --text-secondary: 215 16% 47%;
-    --text-tertiary: 214 32% 64%;
+    --text-tertiary: 215 14% 59%;
+    --text-disabled: 218 11% 65%;
+    --text-inverse: 0 0% 100%;
     
-    /* Azul Mariano (Primary) - Manto de Maria */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 217 91% 67%;
-    --primary-lighter: 213 97% 75%;
-    --primary-dark: 224 76% 48%;
-    --primary-hover: 224 76% 48%;
-    
-    /* Branco Puro (Backgrounds) */
-    --background-primary: 0 0% 100%;
-    --background-secondary: 0 0% 98%;
-    --background-soft: 0 0% 96%;
-    
-    /* Dourado Celestial (Accent) - Auréola */
-    --accent: 38 92% 50%;
-    --accent-foreground: 222 47% 11%;
-    --accent-light: 43 96% 56%;
-    --accent-dark: 32 95% 44%;
-    
-    /* Azul Céu (Complementar) */
-    --sky-blue: 199 89% 60%;
-    --sky-light: 198 93% 73%;
-    
-    /* Cinzas Neutros */
-    --gray-text: 215 16% 47%;
-    --gray-medium: 214 32% 64%;
-    --gray-light: 214 32% 91%;
-    --gray-disabled: 218 27% 84%;
-    
-    /* Semantic Tokens */
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 217 91% 60%;
-    
-    --success: 158 64% 52%;
-    --success-foreground: 0 0% 100%;
-    --success-light: 152 69% 61%;
-    
-    --warning: 38 92% 50%;
-    --warning-light: 43 96% 56%;
-    
-    --error: 4 90% 58%;
-    --error-light: 4 93% 69%;
-    
-    --muted: 214 32% 91%;
-    --muted-foreground: 215 16% 47%;
-    
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    
+    /* Borders */
+    --border-light: 220 13% 95%;
     --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    --border-medium: 215 20% 82%;
+    --border-strong: 218 11% 65%;
     
-    --destructive: 4 90% 58%;
-    --destructive-foreground: 0 0% 100%;
+    /* Semantic Colors */
+    --success-light: 152 69% 90%;
+    --success: 158 64% 52%;
+    --success-dark: 160 84% 39%;
     
+    --warning-light: 48 96% 89%;
+    --warning: 38 92% 50%;
+    --warning-dark: 32 95% 44%;
+    
+    --error-light: 0 86% 95%;
+    --error: 0 84% 60%;
+    --error-dark: 0 72% 51%;
+    
+    --info-light: 214 95% 93%;
+    --info: 217 91% 60%;
+    --info-dark: 221 83% 53%;
+    
+    /* Sky Blue */
+    --sky-blue: 199 89% 48%;
+    
+    /* Grays */
+    --gray-light: 210 20% 96%;
+    --gray-medium: 214 15% 65%;
+    --gray-text: 215 16% 47%;
+    --gray-disabled: 218 11% 65%;
+    
+    /* Shadcn compatibility */
+    --card: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+    --radius: 16px;
     
-    /* Gradients */
-    --gradient-mariano: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 67%));
-    --gradient-gold: linear-gradient(135deg, hsl(38 92% 50%), hsl(43 96% 56%));
-    --gradient-sky: linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 60%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 96%));
+    /* Charts */
+    --chart-1: 221 83% 53%;
+    --chart-2: 32 95% 44%;
+    --chart-3: 158 64% 52%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 84% 60%;
     
-    /* Shadows */
-    --shadow-xs: 0 1px 2px hsl(222 47% 11% / 0.04);
-    --shadow-sm: 0 1px 3px hsl(222 47% 11% / 0.08);
-    --shadow-md: 0 4px 12px hsl(217 91% 60% / 0.12);
-    --shadow-lg: 0 8px 24px hsl(217 91% 60% / 0.16);
-    --shadow-xl: 0 12px 32px hsl(222 47% 11% / 0.12);
-    --shadow-mariano: 0 4px 14px hsl(217 91% 60% / 0.25);
-    --shadow-gold: 0 4px 16px hsl(38 92% 50% / 0.3);
-    
-    /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-fast: all 0.2s ease;
-    
-    --radius: 0.75rem;
-    
+    /* Sidebar & Chat (Legacy) */
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 217 91% 60%;
@@ -105,55 +99,83 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 220 26% 24%;
     --sidebar-ring: 38 92% 50%;
-    
-    /* ChatGPT-style dark theme colors - HSL format */
     --chat-sidebar: 222 47% 11%;
     --chat-main: 220 26% 14%;
     --chat-input: 217 19% 27%;
   }
 
+  /* ===========================
+     DARK THEME
+     =========================== */
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 0 0% 98%;
-    --text-primary: 0 0% 98%;
-    --text-secondary: 214 32% 64%;
-    
-    --primary: 217 91% 67%;
+    --primary: 217 91% 60%;
+    --primary-light: 213 94% 68%;
     --primary-foreground: 222 47% 11%;
-    --primary-hover: 213 97% 75%;
     
-    --secondary: 224 71% 17%;
-    --secondary-foreground: 0 0% 98%;
-    
-    --accent: 38 92% 50%;
+    --accent: 43 96% 56%;
+    --accent-light: 48 97% 77%;
+    --accent-dark: 32 95% 44%;
     --accent-foreground: 222 47% 11%;
-    --accent-light: 32 95% 44%;
     
-    --card: 220 26% 14%;
-    --card-foreground: 0 0% 98%;
+    /* Backgrounds - Deep blue-tinted dark */
+    --background: 222 47% 11%;
+    --background-secondary: 217 33% 17%;
+    --background-tertiary: 215 25% 27%;
+    --background-elevated: 217 33% 17%;
+    --background-soft: 220 26% 14%;
+    --background-primary: 222 47% 11%;
     
-    --border: 217 19% 27%;
-    --input: 217 19% 27%;
-    --ring: 38 92% 50%;
+    /* Text - Inverted */
+    --text-primary: 210 40% 98%;
+    --text-secondary: 217 19% 78%;
+    --text-tertiary: 218 11% 65%;
+    --text-disabled: 215 14% 59%;
+    --text-inverse: 222 47% 11%;
     
-    --muted: 224 71% 17%;
-    --muted-foreground: 214 32% 64%;
+    /* Borders */
+    --border-light: 217 33% 17%;
+    --border: 215 25% 27%;
+    --border-medium: 215 16% 47%;
+    --border-strong: 215 14% 59%;
     
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 38 92% 50%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 224 71% 17%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 217 19% 27%;
-    --sidebar-ring: 38 92% 50%;
-  }
-
-  /* ChatGPT-style dark theme colors */
-  .chat-dark {
-    --chat-sidebar: 222 47% 11%;
-    --chat-main: 220 26% 14%;
-    --chat-input: 217 19% 27%;
+    /* Semantic Colors - Adjusted for dark */
+    --success-light: 160 84% 39%;
+    --success: 158 64% 52%;
+    --success-dark: 152 69% 31%;
+    
+    --warning-light: 26 90% 37%;
+    --warning: 38 92% 50%;
+    --warning-dark: 43 96% 56%;
+    
+    --error-light: 0 63% 31%;
+    --error: 0 84% 60%;
+    --error-dark: 0 91% 71%;
+    
+    --info-light: 226 71% 40%;
+    --info: 217 91% 60%;
+    --info-dark: 213 94% 68%;
+    
+    --sky-blue: 199 89% 48%;
+    
+    --gray-light: 217 33% 17%;
+    --gray-medium: 215 16% 47%;
+    --gray-text: 217 19% 78%;
+    --gray-disabled: 215 14% 59%;
+    
+    /* Shadcn compatibility */
+    --card: 217 33% 17%;
+    --foreground: 210 40% 98%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+    --secondary: 215 25% 27%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 25% 27%;
+    --muted-foreground: 217 19% 78%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --input: 215 25% 27%;
+    --ring: 217 91% 60%;
   }
 }
 
