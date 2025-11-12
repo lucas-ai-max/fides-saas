@@ -147,8 +147,9 @@ Acompanhe no app Fides - Fortalecendo sua jornada de fé`;
       <header className="bg-card border-b border-gray-light sticky top-0 z-20 shadow-sm">
         <div className="flex items-center justify-between p-4">
           <button
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-light transition-colors"
+            onClick={() => navigate('/home')}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-light transition-colors active:scale-95 transition-transform"
+            aria-label="Voltar"
           >
             <ArrowLeft className="w-5 h-5 text-text-primary" />
           </button>
