@@ -88,14 +88,14 @@ const Catechist = () => {
   };
 
   const handleSuggestionClick = (prompt: string) => {
-    setInput(prompt.replace(/^[✝️📿🍞🙏]\s*/, ''));
+    setInput(prompt);
   };
 
   const suggestedPrompts = [
-    '✝️ O que é a Santíssima Trindade?',
-    '📿 Como rezar o Santo Rosário?',
-    '🍞 Explique o significado da Eucaristia',
-    '🙏 Qual a importância da confissão?',
+    'O que é a Santíssima Trindade?',
+    'Como rezar o Santo Rosário?',
+    'Explique o significado da Eucaristia',
+    'Qual a importância da confissão?',
   ];
 
   return (
@@ -147,21 +147,11 @@ const Catechist = () => {
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(prompt)}
-                  className="w-full text-left px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-200"
+                  className="w-full text-left px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-200"
                 >
-                  <div className="flex items-start gap-3">
-                    <span className="text-lg mt-0.5">
-                      {prompt.charAt(0)}
-                    </span>
-                    <div className="flex-1">
-                      <span className="text-sm text-white/90 font-medium">
-                        {prompt.replace(/^[✝️📿🍞🙏]\s*/, '').split(' ').slice(0, 3).join(' ')}
-                      </span>
-                      <p className="text-xs text-white/50 mt-0.5">
-                        {prompt.replace(/^[✝️📿🍞🙏]\s*/, '').split(' ').slice(3).join(' ')}
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-sm text-white/90 font-medium leading-relaxed">
+                    {prompt}
+                  </p>
                 </button>
               ))}
             </div>
