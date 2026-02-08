@@ -1,8 +1,65 @@
 import { useState, useEffect } from 'react';
 import { Prayer, PrayerHistory } from '@/data/prayers';
+import { supabase } from '@/integrations/supabase/client';
 
 const FAVORITES_KEY = 'fides_favorite_prayers';
 const HISTORY_KEY = 'fides_prayer_history';
+
+type PrayerRow = {
+  id: string;
+  title: string;
+  category: string;
+  content: string;
+  duration: number;
+  tags: string[] | null;
+};
+
+function rowToPrayer(row: PrayerRow, isFavorite?: boolean): Prayer {
+  return {
+    id: row.id,
+    title: row.title,
+    category: row.category,
+    content: row.content,
+    duration: row.duration,
+    tags: row.tags ?? [],
+    isFavorite,
+  };
+}
+
+/** Busca orações da tabela prayers do Supabase. Mantém busca e categorias no cliente. */
+export const usePrayers = () => {
+  const [prayers, setPrayers] = useState<Prayer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchPrayers() {
+      setLoading(true);
+      setError(null);
+      const { data, error: err } = await supabase
+        .from('prayers')
+        .select('id, title, category, content, duration, tags')
+        .order('title');
+
+      if (cancelled) return;
+      if (err) {
+        setError(err as Error);
+        setPrayers([]);
+        setLoading(false);
+        return;
+      }
+      setPrayers((data ?? []).map((row) => rowToPrayer(row as PrayerRow)));
+      setLoading(false);
+    }
+
+    fetchPrayers();
+    return () => { cancelled = true; };
+  }, []);
+
+  return { prayers, loading, error };
+};
 
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState<string[]>([]);

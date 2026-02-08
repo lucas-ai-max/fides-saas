@@ -38,7 +38,7 @@ export default {
           foreground: 'hsl(var(--primary-foreground))',
           light: 'hsl(var(--primary-light))',
         },
-        
+
         // Accent - Dourado
         accent: {
           50: 'hsl(48, 100%, 96%)',
@@ -149,9 +149,9 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        serif: ['Literata', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+        serif: ['Playfair Display', 'Literata', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
         scripture: ['Literata', 'Georgia', 'serif'],
-        heading: ['Inter', 'system-ui', 'sans-serif'],
+        heading: ['Playfair Display', 'serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
@@ -229,6 +229,16 @@ export default {
           "50%": {
             transform: "scale(1.02)"
           }
+        },
+        "route-enter": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(8px)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)"
+          }
         }
       },
       animation: {
@@ -237,6 +247,7 @@ export default {
         "fade-in-up": "fade-in-up 0.5s ease-out",
         "gentle-glow": "gentle-glow 3s ease-in-out infinite",
         "breathe": "breathe 4s ease-in-out infinite",
+        "route-enter": "route-enter 0.3s ease-out forwards",
       },
     },
   },

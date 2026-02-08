@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
 import { ArrowLeft, Search, Star, Heart, Clock, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { prayersData } from '@/data/prayers';
-import { useFavorites } from '@/hooks/usePrayers';
+import { usePrayers, useFavorites } from '@/hooks/usePrayers';
 import { BottomNav } from '@/components/BottomNav';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 const Prayers = () => {
   const navigate = useNavigate();
+  const { prayers, loading, error } = usePrayers();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'todas' | 'manha' | 'tarde' | 'noite' | 'favoritas'>('todas');
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -33,7 +34,7 @@ const Prayers = () => {
   };
 
   const filteredPrayers = useMemo(() => {
-    let filtered = prayersData;
+    let filtered = prayers;
 
     // Filter by time of day
     if (selectedFilter === 'manha') {
@@ -72,7 +73,7 @@ const Prayers = () => {
     }
 
     return filtered;
-  }, [searchQuery, selectedFilter, isFavorite]);
+  }, [prayers, searchQuery, selectedFilter, isFavorite]);
 
   return (
     <div className="min-h-screen bg-background-secondary pb-28">
@@ -81,7 +82,7 @@ const Prayers = () => {
         <div className="flex items-center justify-between px-4 py-4">
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 dark:hover:bg-primary-900/40 transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
@@ -101,7 +102,7 @@ const Prayers = () => {
               placeholder="Buscar pelo título, categoria ou conteúdo..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 bg-white rounded-2xl border-2 border-transparent focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all text-foreground placeholder:text-muted-foreground shadow-md"
+              className="w-full pl-12 pr-4 py-3.5 bg-card dark:bg-card/80 rounded-2xl border-2 border-border focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all text-foreground placeholder:text-muted-foreground shadow-md"
             />
           </div>
         </div>
@@ -131,8 +132,21 @@ const Prayers = () => {
         </div>
       </div>
 
+      {/* Loading / Error */}
+      {loading && (
+        <div className="flex justify-center py-12">
+          <LoadingSpinner text="Carregando orações..." />
+        </div>
+      )}
+      {error && !loading && (
+        <div className="px-4 py-8 text-center">
+          <p className="text-destructive font-medium">Não foi possível carregar as orações.</p>
+          <p className="text-sm text-muted-foreground mt-1">{error.message}</p>
+        </div>
+      )}
+
       {/* Counter */}
-      {filteredPrayers.length > 0 && (
+      {!loading && !error && filteredPrayers.length > 0 && (
         <div className="px-4 py-3">
           <p className="text-sm text-muted-foreground">
             <span className="font-bold text-primary">{filteredPrayers.length}</span>{' '}
@@ -142,6 +156,7 @@ const Prayers = () => {
       )}
 
       {/* Lista de Orações */}
+      {!loading && !error && (
       <div className="px-4 space-y-4">
         {filteredPrayers.length === 0 ? (
           // Empty State
@@ -257,6 +272,7 @@ const Prayers = () => {
           ))
         )}
       </div>
+      )}
 
       {/* Bottom Navigation */}
       <BottomNav />

@@ -58,7 +58,7 @@ const Setup = () => {
         timeAvailable,
         completedAt: new Date().toISOString()
       }));
-      navigate("/home");
+      navigate("/login");
     }
   };
 

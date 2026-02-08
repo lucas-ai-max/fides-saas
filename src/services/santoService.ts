@@ -5,6 +5,7 @@ interface SantoDoDia {
   titulo: string;
   historia: string;
   oracao?: string;
+  imagem?: string;
   fonte: string;
 }
 
@@ -89,29 +90,29 @@ class SantoService {
     let nome = 'Santo do Dia';
     let titulo = '';
     let historia = '';
-    
+
     // Extrair nome e título do campo "liturgia"
     if (dados.liturgia && typeof dados.liturgia === 'string') {
       const textoLiturgia = dados.liturgia;
-      
+
       // Remover tipos litúrgicos do final (Memória, Festa, Solenidade, etc)
       const semTipo = textoLiturgia
         .replace(/,?\s*(Memória|Festa|Solenidade|Comemoração|Tempo Comum|Tempo Pascal|Advento|Quaresma|semana).*$/i, '')
         .trim();
-      
+
       // Separar nome do título por vírgula
       const partes = semTipo.split(',').map(p => p.trim());
-      
+
       if (partes.length >= 1) {
         nome = partes[0];
       }
-      
+
       if (partes.length >= 2) {
         titulo = partes.slice(1).join(', ');
         // Capitalizar primeira letra do título
         titulo = titulo.charAt(0).toUpperCase() + titulo.slice(1);
       }
-      
+
       // História: APENAS se a API fornecer no campo específico
       if (dados.historia && typeof dados.historia === 'string') {
         historia = dados.historia;
@@ -140,6 +141,7 @@ class SantoService {
       titulo,
       historia,
       oracao: dados.oracoes?.coleta || dados.oracoes?.oferendas || dados.oracoes?.comunhao,
+      imagem: dados.imagem || undefined, // API probably doesn't have it, but we add it to type
       fonte: 'CNBB',
     };
   }

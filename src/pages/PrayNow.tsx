@@ -1,24 +1,29 @@
 import { useState, useEffect } from 'react';
 import { X, Pause, Play, Check } from 'lucide-react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { prayersData } from '@/data/prayers';
-import { usePrayerHistory } from '@/hooks/usePrayers';
+import { usePrayers, usePrayerHistory } from '@/hooks/usePrayers';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 const PrayNow = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const useTimer = searchParams.get('timer') === 'true';
+  const { prayers, loading, error } = usePrayers();
   const { addToHistory } = usePrayerHistory();
   const { toast } = useToast();
 
-  const prayer = prayersData.find((p) => p.id === id);
+  const prayer = id ? prayers.find((p) => p.id === id) : undefined;
 
-  const [timeRemaining, setTimeRemaining] = useState(prayer ? prayer.duration * 60 : 0);
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRunning, setIsRunning] = useState(useTimer);
   const [fontSize, setFontSize] = useState(20);
   const [startTime] = useState(Date.now());
+
+  useEffect(() => {
+    if (prayer) setTimeRemaining(prayer.duration * 60);
+  }, [prayer]);
 
   useEffect(() => {
     if (!useTimer || !isRunning) return;
@@ -40,11 +45,21 @@ const PrayNow = () => {
     return () => clearInterval(interval);
   }, [useTimer, isRunning]);
 
-  if (!prayer) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-primary to-primary/80 flex items-center justify-center text-white">
+        <LoadingSpinner text="Carregando oração..." />
+      </div>
+    );
+  }
+
+  if (error || !prayer) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-primary to-primary/80 flex items-center justify-center text-white">
         <div className="text-center px-4">
-          <p className="text-lg mb-4">Oração não encontrada</p>
+          <p className="text-lg mb-4">
+            {error ? 'Não foi possível carregar a oração.' : 'Oração não encontrada.'}
+          </p>
           <button
             onClick={() => navigate('/prayers')}
             className="text-accent hover:underline"

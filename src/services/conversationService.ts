@@ -48,18 +48,26 @@ class ConversationService {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
       if (!data) return [];
-      
+
       const conversations = JSON.parse(data);
-      
-      return conversations.map((conv: any) => ({
-        ...conv,
-        createdAt: new Date(conv.createdAt),
-        updatedAt: new Date(conv.updatedAt),
-        messages: conv.messages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }))
-      }));
+
+      return conversations.map((conv: any) => {
+        const createdAt = new Date(conv.createdAt);
+        const updatedAt = new Date(conv.updatedAt);
+
+        return {
+          ...conv,
+          createdAt: isNaN(createdAt.getTime()) ? new Date() : createdAt,
+          updatedAt: isNaN(updatedAt.getTime()) ? new Date() : updatedAt,
+          messages: (conv.messages || []).map((msg: any) => {
+            const timestamp = new Date(msg.timestamp);
+            return {
+              ...msg,
+              timestamp: isNaN(timestamp.getTime()) ? new Date() : timestamp
+            };
+          })
+        };
+      });
     } catch (error) {
       console.error('Erro ao obter conversas:', error);
       return [];
@@ -70,16 +78,16 @@ class ConversationService {
   private generateTitle(message: string): string {
     const maxLength = 50;
     let title = message.substring(0, maxLength);
-    
+
     const firstPeriod = title.indexOf('.');
     if (firstPeriod > 0 && firstPeriod < maxLength) {
       title = title.substring(0, firstPeriod);
     }
-    
+
     if (message.length > maxLength) {
       title += '...';
     }
-    
+
     return title;
   }
 
@@ -117,7 +125,7 @@ class ConversationService {
 
     const conversation = conversations[convIndex];
     conversation.messages.push(userMessage, assistantMessage);
-    
+
     // Atualiza preview com a última resposta do assistente
     conversation.preview = assistantMessage.content.substring(0, 100);
     if (assistantMessage.content.length > 100) {

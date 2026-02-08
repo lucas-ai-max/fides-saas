@@ -96,7 +96,7 @@ const ExameConsciencia = () => {
             </div>
           )}
           <button
-            onClick={() => navigate('/churches')}
+            onClick={() => navigate('/home')}
             className="text-primary text-sm font-medium hover:underline"
           >
             Encontrar confessionário próximo →

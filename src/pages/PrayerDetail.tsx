@@ -1,22 +1,33 @@
 import { ArrowLeft, Star, Share2, Clock, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { prayersData } from '@/data/prayers';
-import { useFavorites } from '@/hooks/usePrayers';
+import { usePrayers, useFavorites } from '@/hooks/usePrayers';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 const PrayerDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { prayers, loading, error } = usePrayers();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { toast } = useToast();
 
-  const prayer = prayersData.find((p) => p.id === id);
+  const prayer = id ? prayers.find((p) => p.id === id) : undefined;
 
-  if (!prayer) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-secondary text-lg mb-4">Oração não encontrada</p>
+        <LoadingSpinner text="Carregando oração..." />
+      </div>
+    );
+  }
+
+  if (error || !prayer) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center px-4">
+          <p className="text-secondary text-lg mb-4">
+            {error ? 'Não foi possível carregar a oração.' : 'Oração não encontrada.'}
+          </p>
           <button
             onClick={() => navigate('/prayers')}
             className="text-primary hover:underline"

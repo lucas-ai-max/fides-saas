@@ -281,7 +281,7 @@ const ExameConclusao = () => {
           <Button
             onClick={() => {
               completeExam();
-              navigate('/churches');
+              navigate('/home');
             }}
             className="w-full"
           >

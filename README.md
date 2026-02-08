@@ -1,6 +1,52 @@
-# Welcome to your Lovable project
+# Fides - Sob o Manto de Maria
 
-## Project info
+## Estrutura do projeto (Back e Front separados)
+
+- **Frontend**: aplicação React (Vite) na raiz do repositório. Roda em `http://localhost:8080`.
+- **Backend**: API Node (Express) na pasta `backend/`. Roda em `http://localhost:3001`.
+
+### Variáveis de ambiente
+
+**Frontend** (arquivo `.env` na raiz):
+
+- `VITE_SUPABASE_URL` – URL do projeto Supabase
+- `VITE_SUPABASE_PUBLISHABLE_KEY` – Chave anônima do Supabase
+- `VITE_API_URL` – URL da API (ex.: `http://localhost:3001`). Opcional; padrão: `http://localhost:3001`
+
+**Backend** (arquivo `backend/.env`):
+
+- `PORT` – Porta do servidor (padrão: 3001)
+- `FRONTEND_URL` – URL do frontend para CORS (ex.: `http://localhost:8080`)
+- `SUPABASE_URL` – Mesmo valor de `VITE_SUPABASE_URL`
+- `SUPABASE_ANON_KEY` – Mesmo valor de `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+### Como rodar
+
+1. **Instalar dependências**
+   ```sh
+   npm i
+   cd backend && npm i && cd ..
+   ```
+
+2. **Subir o backend**
+   ```sh
+   cd backend
+   cp .env.example .env
+   # Edite backend/.env com SUPABASE_URL e SUPABASE_ANON_KEY
+   npm run dev
+   ```
+   Em outro terminal:
+
+3. **Subir o frontend**
+   ```sh
+   npm run dev
+   ```
+
+4. Acesse o app em `http://localhost:8080`. Login/registro são feitos via backend (Supabase Auth).
+
+---
+
+## Project info (Lovable)
 
 **URL**: https://lovable.dev/projects/c7bbdb63-024e-4d15-aa55-3d16073dece4
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Sparkles, Menu, PenSquare } from 'lucide-react';
-import { conversationService, Message } from '@/services/conversationService';
+import { Send, Loader2, Menu, Plus, Cross, Sparkles, Bird, MessageSquare, Trash2 } from 'lucide-react';
+import { conversationService, Message, Conversation } from '@/services/conversationService';
 import MarkdownMessage from '@/components/MarkdownMessage';
 import { BottomNav } from '@/components/BottomNav';
 
@@ -9,8 +9,35 @@ const Catechist = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  const loadConversations = () => {
+    const loaded = conversationService.getConversations();
+    setConversations(loaded);
+
+    // Check if there is an active conversation maintained by service
+    const currentConvId = conversationService.getCurrentConversationId();
+    if (currentConvId) {
+      const currentConv = loaded.find(conv => conv.id === currentConvId);
+      if (currentConv) {
+        setMessages(currentConv.messages);
+        setCurrentThreadId(currentConv.threadId);
+        setActiveConversationId(currentConv.id);
+      } else {
+        conversationService.setCurrentConversation(null);
+      }
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -28,6 +55,33 @@ const Catechist = () => {
     }
   }, [input]);
 
+  const handleCreateNewChat = () => {
+    setMessages([]);
+    setCurrentThreadId(null);
+    setActiveConversationId(null);
+    conversationService.setCurrentConversation(null);
+    setIsSidebarOpen(false);
+  };
+
+  const handleSelectConversation = (conv: Conversation) => {
+    setMessages(conv.messages);
+    setCurrentThreadId(conv.threadId);
+    setActiveConversationId(conv.id);
+    conversationService.setCurrentConversation(conv.id);
+    setIsSidebarOpen(false);
+  };
+
+  const handleDeleteConversation = (e: React.MouseEvent, convId: string) => {
+    e.stopPropagation();
+    if (confirm('Tem certeza que deseja excluir esta conversa?')) {
+      conversationService.deleteConversation(convId);
+      loadConversations();
+      if (activeConversationId === convId) {
+        handleCreateNewChat();
+      }
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -38,18 +92,23 @@ const Catechist = () => {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Optimistic update
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+
     const messageToSend = input.trim();
     setInput('');
     setIsLoading(true);
 
     try {
+      let currentConvId = activeConversationId;
+
       const { supabase } = await import('@/integrations/supabase/client');
 
       const { data, error } = await supabase.functions.invoke('chat-catechist', {
-        body: { 
+        body: {
           message: messageToSend,
-          threadId: currentThreadId 
+          threadId: currentThreadId
         }
       });
 
@@ -63,9 +122,42 @@ const Catechist = () => {
         sources: data.sources
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
-
+      const updatedMessages = [...newMessages, assistantMessage];
+      setMessages(updatedMessages);
       setCurrentThreadId(data.threadId);
+
+      // Persist conversation
+      if (!currentConvId) {
+        const newConv = conversationService.createNewConversation(messageToSend, data.threadId);
+        currentConvId = newConv.id;
+        setActiveConversationId(newConv.id);
+
+        // Immediate UI update for Sidebar
+        setConversations(prev => [newConv, ...prev]);
+      }
+
+      if (currentConvId) {
+        conversationService.addMessages(currentConvId, userMessage, assistantMessage);
+
+        // Update the conversation in the list (move to top, update preview)
+        setConversations(prev => {
+          const updated = [...prev];
+          const index = updated.findIndex(c => c.id === currentConvId);
+          if (index !== -1) {
+            const conv = updated[index];
+            // Mimic service logic for immediate feedback
+            conv.messages.push(userMessage, assistantMessage);
+            conv.preview = assistantMessage.content.substring(0, 100) + (assistantMessage.content.length > 100 ? '...' : '');
+            updated.splice(index, 1);
+            updated.unshift(conv);
+          }
+          return updated;
+        });
+
+        // Also sync with storage to be safe
+        loadConversations();
+      }
+
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
@@ -91,96 +183,165 @@ const Catechist = () => {
     setInput(prompt);
   };
 
-  const suggestedPrompts = [
-    'O que é a Santíssima Trindade?',
-    'Como rezar o Santo Rosário?',
-    'Explique o significado da Eucaristia',
-    'Qual a importância da confissão?',
+  const suggestedQuestions = [
+    "O que é a Santíssima Trindade?",
+    "Como rezar quando não sei o que dizer?",
+    "Por que os católicos se confessam?",
+    "O que acontece na Missa?",
+    "Posso falar com Deus do meu jeito?"
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-[#1a1a1a] dark:bg-[#1a1a1a]">
-      {/* Fixed Header - ChatGPT Style */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1a] border-b border-white/10">
-        <div className="px-4 py-3 flex items-center justify-between">
-          {/* Menu Button */}
-          <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-            <Menu className="w-5 h-5 text-white/70" />
-          </button>
-          
-          {/* Title */}
-          <h1 className="text-white font-medium text-base">
-            Catequista IA
-          </h1>
+    <div className="flex h-screen bg-background text-foreground font-sans selection:bg-primary/30 overflow-hidden transition-colors duration-300">
 
-          {/* New Chat Button */}
-          <button 
-            onClick={() => {
-              setMessages([]);
-              setCurrentThreadId(null);
-            }}
-            className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+      {/* Sidebar Overlay (Mobile) */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed md:relative z-50 h-full w-[280px] bg-card border-r border-border flex flex-col transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="p-4">
+          <button
+            onClick={handleCreateNewChat}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 hover:bg-primary/10 border border-border hover:border-primary/20 transition-all text-sm font-medium text-foreground"
           >
-            <PenSquare className="w-5 h-5 text-white/70" />
+            <Plus className="w-5 h-5 text-accent" />
+            Novo Chat
           </button>
         </div>
-      </header>
 
-      {/* Messages Area with top padding for fixed header */}
-      <div className="flex-1 overflow-y-auto pt-[52px] pb-[140px]">
-        {messages.length === 0 ? (
-          // Empty State - ChatGPT Style
-          <div className="flex flex-col items-center justify-center min-h-full px-4 py-12">
-            {/* Loading Icon */}
-            <div className="w-16 h-16 mb-8 flex items-center justify-center">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-white/10 border-t-white/30 rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl">✝️</span>
-                </div>
-              </div>
+        <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1 custom-scrollbar">
+          <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Histórico
+          </div>
+
+          {conversations.length === 0 ? (
+            <div className="px-3 py-4 text-sm text-muted-foreground/70 text-center italic">
+              Nenhuma conversa ainda
             </div>
+          ) : (
+            conversations.map((conv) => (
+              <div
+                key={conv.id}
+                onClick={() => handleSelectConversation(conv)}
+                className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${activeConversationId === conv.id
+                  ? 'bg-primary/10 text-primary dark:text-accent'
+                  : 'text-muted-foreground hover:bg-primary/5 hover:text-foreground'
+                  }`}
+              >
+                <div className="w-5 h-5 flex items-center justify-center">
+                  <MessageSquare className="w-4 h-4 shrink-0 opacity-70" />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-sm truncate pr-6 text-left">{conv.title}</p>
+                </div>
 
-            {/* Suggested Prompts - ChatGPT Style */}
-            <div className="w-full max-w-2xl space-y-2 px-2">
-              {suggestedPrompts.map((prompt, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSuggestionClick(prompt)}
-                  className="w-full text-left px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-200"
-                >
-                  <p className="text-sm text-white/90 font-medium leading-relaxed">
-                    {prompt}
-                  </p>
-                </button>
-              ))}
+                {activeConversationId === conv.id && (
+                  <button
+                    onClick={(e) => handleDeleteConversation(e, conv.id)}
+                    className="absolute right-2 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 md:opacity-0 md:group-hover:opacity-100 transition-all opacity-100"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-primary/5 cursor-pointer transition-colors">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+              <span className="text-xs font-bold text-accent">LS</span>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-medium text-foreground">Lucas Silva</p>
+              <p className="text-xs text-muted-foreground truncate">Free Plan</p>
             </div>
           </div>
-        ) : (
-          // Messages - ChatGPT Style
-          <div className="py-6 space-y-6 max-w-3xl mx-auto w-full">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`px-4 ${
-                  message.role === 'assistant' ? 'bg-white/[0.02]' : ''
-                }`}
-              >
-                <div className="max-w-3xl mx-auto py-5">
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-full relative w-full bg-background">
+
+        {/* Header (Mobile Toggle) */}
+        <header className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-4 md:hidden bg-gradient-to-b from-background to-transparent">
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 -ml-2 rounded-full hover:bg-primary/10 text-foreground"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          <span className="font-serif text-primary">Catequista IA</span>
+          <div className="w-8" /> {/* Spacer */}
+        </header>
+
+        {/* Messages Area */}
+        <main className="flex-1 overflow-y-auto pt-[60px] pb-[160px]">
+          {messages.length === 0 ? (
+            // Welcome Screen
+            <div className="min-h-full flex flex-col items-center justify-center px-4 animate-in fade-in duration-700">
+
+              {/* Intro Message */}
+              <div className="flex items-center gap-2 mb-8 text-muted-foreground opacity-80">
+                <Cross className="w-3 h-3" />
+                <span className="text-xs tracking-wider uppercase">Estou aqui para te ajudar a compreender a fé católica</span>
+              </div>
+
+              {/* Central Question */}
+              <h2 className="font-serif text-2xl md:text-3xl text-center text-foreground mb-10 leading-relaxed font-light">
+                O que você gostaria de <br />
+                <span className="text-accent font-normal">aprender hoje?</span>
+              </h2>
+
+              {/* Content Container with Dove Decoration */}
+              <div className="relative w-full max-w-lg">
+
+                {/* Decorative Dove/Sparkle */}
+                <div className="absolute -left-12 top-1/2 -translate-y-1/2 w-24 h-24 hidden md:flex items-center justify-center pointer-events-none opacity-40">
+                  <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full"></div>
+                  <Bird className="w-12 h-12 text-accent/50 drop-shadow-[0_0_15px_rgba(251,191,36,0.3)]" />
+                </div>
+
+                {/* Suggestions List */}
+                <div className="space-y-3 relative z-10">
+                  {suggestedQuestions.map((q, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSuggestionClick(q)}
+                      className="w-full text-left p-4 rounded-2xl bg-card border border-border hover:border-primary/30 hover:bg-card/80 transition-all duration-300 group shadow-lg"
+                    >
+                      <span className="text-foreground/90 group-hover:text-foreground font-light text-[15px]">{q}</span>
+                    </button>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+          ) : (
+            // Chat Interface
+            <div className="max-w-3xl mx-auto py-6 space-y-8">
+              {messages.map((message) => (
+                <div key={message.id} className={`px-4 ${message.role === 'assistant' ? '' : ''}`}>
                   <div className="flex gap-4">
-                    {/* Avatar */}
-                    <div className="flex-shrink-0 w-8 h-8 rounded-sm flex items-center justify-center bg-white/5">
-                      {message.role === 'user' ? (
-                        <span className="text-white text-sm font-semibold">V</span>
-                      ) : (
-                        <span className="text-lg">✝️</span>
-                      )}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${message.role === 'assistant'
+                      ? 'bg-primary/20 text-accent border border-primary/30'
+                      : 'bg-primary/5 text-muted-foreground'
+                      }`}>
+                      {message.role === 'assistant' ? <Sparkles className="w-4 h-4" /> : <span className="text-xs font-bold">V</span>}
                     </div>
 
-                    {/* Message Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white/90 leading-7">
-                        <MarkdownMessage 
+                    <div className="flex-1 space-y-2">
+                      <div className="prose prose-invert dark:prose-invert prose-p:text-foreground prose-headings:text-primary prose-strong:text-accent prose-a:text-accent max-w-none">
+                        <MarkdownMessage
                           content={message.content}
                           isAssistant={message.role === 'assistant'}
                           enableTyping={message.role === 'assistant' && messages[messages.length - 1]?.id === message.id}
@@ -189,89 +350,78 @@ const Catechist = () => {
 
                       {/* Sources */}
                       {message.sources && message.sources.length > 0 && (
-                        <div className="mt-3 space-y-1.5">
+                        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
                           {message.sources.map((source, idx) => (
-                            <div
-                              key={idx}
-                              className="text-xs bg-white/5 border border-white/10 rounded-lg px-3 py-2 flex items-center gap-2"
-                            >
-                              <span>📖</span>
-                              <span className="text-white/60">{source.reference}</span>
-                            </div>
+                            <span key={idx} className="text-[10px] uppercase tracking-wider text-accent/80 border border-primary/20 rounded-md px-2 py-1">
+                              {source.reference}
+                            </span>
                           ))}
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {/* Typing Indicator - ChatGPT Style */}
-            {isLoading && (
-              <div className="px-4 bg-white/[0.02]">
-                <div className="max-w-3xl mx-auto py-5">
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-sm flex items-center justify-center bg-white/5">
-                      <span className="text-lg">✝️</span>
+              {isLoading && (
+                <div className="px-4">
+                  <div className="flex gap-4 items-center">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+                      <Loader2 className="w-4 h-4 text-accent animate-spin" />
                     </div>
-                    <div className="flex-1 pt-1">
-                      <div className="flex gap-1">
-                        <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                      </div>
-                    </div>
+                    <span className="text-muted-foreground text-sm animate-pulse">Catequista está escrevendo...</span>
                   </div>
                 </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-      </div>
-
-      {/* Fixed Input Area - ChatGPT Style */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a] to-[#1a1a1a]/95 pb-20">
-        <div className="px-4 py-4 max-w-3xl mx-auto">
-          <div className="relative bg-[#2f2f2f] rounded-3xl border border-white/10 focus-within:border-white/20 transition-all shadow-lg">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Mensagem Catequista IA"
-              disabled={isLoading}
-              className="w-full bg-transparent text-white placeholder-white/40 px-5 py-4 pr-14 focus:outline-none resize-none max-h-32 disabled:opacity-50 text-[15px] leading-relaxed"
-              rows={1}
-            />
-            
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className={`absolute right-2 bottom-2 p-2.5 rounded-full transition-all ${
-                input.trim() && !isLoading
-                  ? 'bg-white text-[#1a1a1a] hover:bg-white/90'
-                  : 'bg-white/10 text-white/30 cursor-not-allowed'
-              }`}
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
               )}
-            </button>
-          </div>
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </main>
 
-          <p className="text-[11px] text-white/40 text-center mt-2.5">
-            O Catequista IA pode cometer erros. Verifique informações importantes.
-          </p>
+        {/* Input Area */}
+        <div className="fixed bottom-0 left-0 md:left-[280px] right-0 z-40 bg-gradient-to-t from-background via-background to-transparent pb-6 pt-10">
+          <div className="max-w-3xl mx-auto px-4">
+            <div className={`relative transition-all duration-300`}>
+              <div className="relative bg-card rounded-[24px] border border-border focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 shadow-2xl overflow-hidden">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Escreva sua dúvida ou aquilo que deseja entender..."
+                  disabled={isLoading}
+                  className="w-full bg-transparent text-foreground placeholder-muted-foreground px-6 py-4 pr-14 focus:outline-none resize-none max-h-32 disabled:opacity-50 text-[15px] leading-relaxed custom-scrollbar"
+                  rows={1}
+                />
+
+                <button
+                  onClick={handleSend}
+                  disabled={!input.trim() || isLoading}
+                  className={`absolute right-2 bottom-2 p-2 rounded-xl transition-all ${input.trim() && !isLoading
+                    ? 'bg-accent text-accent-foreground hover:opacity-90 hover:scale-105'
+                    : 'bg-muted text-muted-foreground/50 cursor-not-allowed'
+                    }`}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="text-center mt-3">
+                <p className="text-[10px] text-muted-foreground">
+                  As respostas seguem o ensinamento da Igreja, mas não substituem um sacerdote ou catequista humano.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
 
-      {/* Bottom Navigation */}
-      <BottomNav />
+      {/* Bottom Navigation (likely hidden on desktop if using sidebar, but preserving for mobile consistency) */}
+      <div className="md:hidden">
+        <BottomNav />
+      </div>
+
     </div>
   );
 };

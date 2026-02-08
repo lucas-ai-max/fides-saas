@@ -25,9 +25,9 @@ const isMobile = () => {
 // Abre mapa usando JavaScript (evita bloqueio CORS)
 const abrirMapa = (igreja: IgrejaCatolica, tipo: 'directions' | 'view') => {
   const { latitude, longitude } = igreja;
-  
+
   let url = '';
-  
+
   if (tipo === 'directions') {
     if (isMobile()) {
       url = `geo:${latitude},${longitude}?q=${latitude},${longitude}`;
@@ -35,9 +35,9 @@ const abrirMapa = (igreja: IgrejaCatolica, tipo: 'directions' | 'view') => {
     } else {
       // URL simplificada do Google Maps para desktop
       url = `https://maps.google.com/?daddr=${latitude},${longitude}`;
-      
+
       const win = window.open(url, '_blank', 'noopener,noreferrer');
-      
+
       // Fallback se bloqueado por popup blocker
       if (!win || win.closed || typeof win.closed == 'undefined') {
         window.location.href = url;
@@ -123,7 +123,7 @@ export default function IgrejasProximas() {
         <div className="flex flex-col items-center justify-center p-8 mt-20">
           <Loader2 className="w-12 h-12 animate-spin text-accent mb-4" />
           <p className="text-foreground font-medium">Buscando igrejas próximas...</p>
-          <p className="text-muted-foreground text-sm mt-2">Consultando OpenStreetMap</p>
+          <p className="text-muted-foreground text-sm mt-2">Buscando no Google Maps...</p>
         </div>
       </div>
     );
@@ -187,31 +187,28 @@ export default function IgrejasProximas() {
           <div className="flex gap-2">
             <button
               onClick={() => setRaio(5000)}
-              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
-                raio === 5000
+              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${raio === 5000
                   ? 'bg-accent text-accent-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
+                }`}
             >
               5 km
             </button>
             <button
               onClick={() => setRaio(10000)}
-              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
-                raio === 10000
+              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${raio === 10000
                   ? 'bg-accent text-accent-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
+                }`}
             >
               10 km
             </button>
             <button
               onClick={() => setRaio(15000)}
-              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
-                raio === 15000
+              className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${raio === 15000
                   ? 'bg-accent text-accent-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
+                }`}
             >
               15 km
             </button>
@@ -345,7 +342,7 @@ export default function IgrejasProximas() {
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-bold text-lg">Ver no Mapa</p>
-                        <p className="text-sm text-green-100">Abrir localização no OpenStreetMap</p>
+                        <p className="text-sm text-green-100">Abrir localização no Google Maps</p>
                       </div>
                       <ExternalLink className="w-5 h-5" />
                     </div>
@@ -408,7 +405,7 @@ export default function IgrejasProximas() {
                           Como navegar até lá:
                         </p>
                         <p className="text-xs text-amber-800">
-                          Clique em "Copiar Coordenadas", abra o Google Maps ou Waze no seu celular, 
+                          Clique em "Copiar Coordenadas", abra o Google Maps ou Waze no seu celular,
                           cole as coordenadas na busca e inicie a navegação.
                         </p>
                       </div>
@@ -428,7 +425,7 @@ export default function IgrejasProximas() {
                       >
                         🗺️ Tentar Google Maps
                       </a>
-                      
+
                       {/* Waze */}
                       <a
                         href={`waze://?ll=${igreja.latitude},${igreja.longitude}&navigate=yes`}
@@ -436,7 +433,7 @@ export default function IgrejasProximas() {
                       >
                         🚗 Tentar Waze
                       </a>
-                      
+
                       {/* Apple Maps */}
                       <a
                         href={`maps://?daddr=${igreja.latitude},${igreja.longitude}`}
@@ -480,9 +477,9 @@ export default function IgrejasProximas() {
         {/* Footer Informativo */}
         <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg text-center">
           <p className="text-xs text-muted-foreground">
-            Dados fornecidos por <strong>OpenStreetMap</strong> 🗺️
+            Dados fornecidos por <strong>Google Maps</strong> 🗺️
             <br />
-            Fonte colaborativa e gratuita
+            Maior precisão e cobertura
           </p>
         </div>
       </div>

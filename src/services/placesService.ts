@@ -18,9 +18,13 @@ interface IgrejaCatolica {
   horarios?: string;
   descricao?: string;
   paroquia?: string;
+  rating?: number;
+  userRatingCount?: number;
+  isOpenNow?: boolean;
 }
 
 class PlacesService {
+  private readonly GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   private readonly RAIO_BUSCA = 10000; // 10km em metros
   private cache: Map<string, { data: IgrejaCatolica[]; timestamp: number }> = new Map();
   private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutos
@@ -75,13 +79,17 @@ class PlacesService {
   }
 
   /**
-   * Busca igrejas católicas próximas usando OpenStreetMap
+   * Busca igrejas católicas próximas usando Google Places API
    */
   async buscarIgrejasProximas(
     localizacao?: LocalizacaoUsuario,
     raio?: number
   ): Promise<IgrejaCatolica[]> {
     try {
+      if (!this.GOOGLE_API_KEY) {
+        throw new Error('Chave da API do Google Maps não configurada (.env)');
+      }
+
       const loc = localizacao || (await this.obterLocalizacaoUsuario());
       const raioFinal = raio || this.RAIO_BUSCA;
 
@@ -90,15 +98,13 @@ class PlacesService {
       const cached = this.cache.get(cacheKey);
 
       if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-        console.log('📦 Igrejas do cache');
+        console.log('📦 Igrejas do cache (Google)');
         return cached.data;
       }
 
-      console.log(`🔍 Buscando igrejas no OpenStreetMap (raio: ${(raioFinal / 1000).toFixed(1)}km)...`);
-      console.log(`📍 Localização: ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`);
+      console.log(`🔍 Buscando igrejas no Google Places (raio: ${(raioFinal / 1000).toFixed(1)}km)...`);
 
-      // Buscar usando Overpass API com fallback automático
-      const igrejas = await this.buscarNoOpenStreetMap(loc, raioFinal);
+      const igrejas = await this.buscarNoGooglePlaces(loc, raioFinal);
 
       // Salvar no cache
       this.cache.set(cacheKey, {
@@ -106,7 +112,7 @@ class PlacesService {
         timestamp: Date.now(),
       });
 
-      console.log(`✅ ${igrejas.length} igrejas encontradas`);
+      console.log(`✅ ${igrejas.length} igrejas encontradas no Google`);
       return igrejas;
     } catch (error) {
       console.error('❌ Erro ao buscar igrejas:', error);
@@ -115,414 +121,145 @@ class PlacesService {
   }
 
   /**
-   * Busca igrejas usando Overpass API (OpenStreetMap)
+   * Busca usando Google Places API (New)
    */
-  private async buscarNoOpenStreetMap(
+  private async buscarNoGooglePlaces(
     localizacao: LocalizacaoUsuario,
     raio: number
   ): Promise<IgrejaCatolica[]> {
-    const overpassUrl = 'https://overpass-api.de/api/interpreter';
+    const url = 'https://places.googleapis.com/v1/places:searchNearby';
 
-    // Query PRIMARY: Busca igrejas católicas com várias variações
-    const queryPrimary = `
-      [out:json][timeout:25];
-      (
-        node["amenity"="place_of_worship"]["religion"="christian"]["denomination"~"[Cc]atholic|[Rr]oman_[Cc]atholic|católica"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-        way["amenity"="place_of_worship"]["religion"="christian"]["denomination"~"[Cc]atholic|[Rr]oman_[Cc]atholic|católica"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-        
-        node["amenity"="place_of_worship"]["religion"="christian"]["name"~"[Cc]atedral|[Ii]greja|[Pp]aróquia|[Bb]asílica|[Ss]antuário|Nossa Senhora|São|Santa"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-        way["amenity"="place_of_worship"]["religion"="christian"]["name"~"[Cc]atedral|[Ii]greja|[Pp]aróquia|[Bb]asílica|[Ss]antuário|Nossa Senhora|São|Santa"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-      );
-      out body;
-      >;
-      out skel qt;
-    `;
+    // Campos que queremos retornar
+    // https://developers.google.com/maps/documentation/places/web-service/place-field-support
+    const fieldMask = [
+      'places.id',
+      'places.displayName',
+      'places.formattedAddress',
+      'places.location',
+      'places.types',
+      'places.nationalPhoneNumber',
+      'places.websiteUri',
+      'places.rating',
+      'places.userRatingCount',
+      'places.currentOpeningHours',
+      'places.businessStatus'
+    ].join(',');
+
+    const requestBody = {
+      includedTypes: ['church', 'catholic_church', 'place_of_worship'],
+      maxResultCount: 20,
+      locationRestriction: {
+        circle: {
+          center: {
+            latitude: localizacao.latitude,
+            longitude: localizacao.longitude,
+          },
+          radius: raio,
+        },
+      },
+      // Opcional: filtrar apenas católicas se possível ou filtrar no client
+      // Google places types: "catholic_church" existe? Sim, mas nem todas estão marcadas assim.
+      // Vamos pegar 'church' e filtrar por nome se necessário, ou confiar no resultado.
+    };
 
     try {
-      console.log('🔍 Buscando igrejas católicas...');
-      
-      const response = await fetch(overpassUrl, {
+      const response = await fetch(url, {
         method: 'POST',
-        body: `data=${encodeURIComponent(queryPrimary)}`,
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': this.GOOGLE_API_KEY,
+          'X-Goog-FieldMask': fieldMask,
         },
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        throw new Error(`Erro na API: ${response.status}`);
+        const err = await response.text();
+        throw new Error(`Erro Google API: ${response.status} - ${err}`);
       }
 
       const data = await response.json();
-      console.log('📊 Elementos encontrados:', data.elements?.length || 0);
 
-      let igrejas: IgrejaCatolica[] = [];
-
-      // Se encontrou resultados, processar
-      if (data.elements && data.elements.length > 0) {
-        igrejas = this.processarResultadosOSM(data.elements, localizacao);
+      if (!data.places || data.places.length === 0) {
+        return [];
       }
 
-      // FALLBACK: Se não encontrou nenhuma, buscar TODAS as igrejas cristãs
-      if (igrejas.length === 0) {
-        console.log('⚠️ Nenhuma igreja católica encontrada, buscando todas as igrejas cristãs...');
-        
-        const queryFallback = `
-          [out:json][timeout:25];
-          (
-            node["amenity"="place_of_worship"]["religion"="christian"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-            way["amenity"="place_of_worship"]["religion"="christian"](around:${raio},${localizacao.latitude},${localizacao.longitude});
-          );
-          out body;
-          >;
-          out skel qt;
-        `;
+      // Filtrar e transformar
+      let services = data.places.map((place: any) => this.transformarGooglePlace(place, localizacao));
 
-        const responseFallback = await fetch(overpassUrl, {
-          method: 'POST',
-          body: `data=${encodeURIComponent(queryFallback)}`,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        });
-
-        if (responseFallback.ok) {
-          const dataFallback = await responseFallback.json();
-          console.log('📊 Igrejas cristãs encontradas (fallback):', dataFallback.elements?.length || 0);
-          
-          if (dataFallback.elements && dataFallback.elements.length > 0) {
-            igrejas = this.processarResultadosOSM(dataFallback.elements, localizacao);
-            igrejas = this.filtrarIgrejasCatolicasPorNome(igrejas);
-          }
-        }
-      }
-
-      // FALLBACK 2: Se ainda não encontrou, usar dados mockados
-      if (igrejas.length === 0) {
-        console.log('⚠️ Usando dados mockados (para sua região pode não haver dados no OSM)');
-        return this.getIgrejasMockBrasil(localizacao);
-      }
-
-      // Remover duplicatas
-      const igrejasUnicas = this.removerDuplicatas(igrejas);
+      // Filtragem extra de segurança para garantir que é católico
+      // O Google retorna "church", mas pode vir evangélica. Vamos tentar filtrar por nome/tipo.
+      // O tipo 'catholic_church' ajuda, mas se não tiver, olhamos o nome.
+      services = services.filter((igreja: IgrejaCatolica) => this.ehProvavelCatolica(igreja, data.places.find((p: any) => p.id === igreja.id)));
 
       // Ordenar por distância
-      igrejasUnicas.sort((a, b) => (a.distancia || 0) - (b.distancia || 0));
+      services.sort((a: IgrejaCatolica, b: IgrejaCatolica) => (a.distancia || 0) - (b.distancia || 0));
 
-      // Enriquecer com endereços (apenas as 10 mais próximas)
-      await this.enriquecerComEnderecos(igrejasUnicas.slice(0, 10));
-
-      console.log(`✅ ${igrejasUnicas.length} igrejas católicas encontradas e processadas`);
-      
-      return igrejasUnicas;
+      return services;
     } catch (error) {
-      console.error('❌ Erro ao buscar no OpenStreetMap:', error);
-      return this.getIgrejasMockBrasil(localizacao);
+      console.error('Erro na requisição Google Places:', error);
+      throw error;
     }
   }
 
-  /**
-   * Processa resultados do OSM
-   */
-  private processarResultadosOSM(elements: any[], localizacao: LocalizacaoUsuario): IgrejaCatolica[] {
-    const igrejas: IgrejaCatolica[] = [];
-    const processedIds = new Set<string>();
-
-    for (const element of elements) {
-      const elementId = `${element.type}-${element.id}`;
-      
-      if (processedIds.has(elementId)) continue;
-      processedIds.add(elementId);
-
-      if (element.type === 'node' && element.tags && element.lat && element.lon) {
-        const igreja = this.transformarElementoOSM(element, localizacao);
-        if (igreja) {
-          igrejas.push(igreja);
-        }
-      } else if (element.type === 'way' && element.tags) {
-        const center = this.calcularCentroWay(element, elements);
-        if (center) {
-          const igreja = this.transformarElementoOSM(
-            { ...element, lat: center.lat, lon: center.lon },
-            localizacao
-          );
-          if (igreja) {
-            igrejas.push(igreja);
-          }
-        }
-      }
-    }
-
-    return igrejas;
-  }
-
-  /**
-   * Filtra igrejas católicas por nome (quando não tem denomination)
-   */
-  private filtrarIgrejasCatolicasPorNome(igrejas: IgrejaCatolica[]): IgrejaCatolica[] {
-    const palavrasCatolicas = [
-      'católica',
-      'catedral',
-      'paróquia',
-      'basílica',
-      'santuário',
-      'nossa senhora',
-      'são ',
-      'santa ',
-      'santo ',
-      'matriz',
-      'sagrada',
-      'imaculada',
-      'rosário',
-      'carmo',
-      'aparecida',
-    ];
-
-    return igrejas.filter((igreja) => {
-      const nomeLower = igreja.nome.toLowerCase();
-      
-      if (igreja.denominacao?.toLowerCase().includes('católica')) {
-        return true;
-      }
-
-      return palavrasCatolicas.some((palavra) => nomeLower.includes(palavra));
-    });
-  }
-
-  /**
-   * Dados mockados para Brasil
-   */
-  private getIgrejasMockBrasil(localizacao: LocalizacaoUsuario): IgrejaCatolica[] {
-    const igrejasMock: Partial<IgrejaCatolica>[] = [
-      {
-        nome: 'Catedral Metropolitana',
-        endereco: 'Centro da cidade',
-        latitude: localizacao.latitude + 0.01,
-        longitude: localizacao.longitude + 0.01,
-        denominacao: 'Católica Romana',
-      },
-      {
-        nome: 'Igreja Nossa Senhora Aparecida',
-        endereco: 'Região central',
-        latitude: localizacao.latitude - 0.015,
-        longitude: localizacao.longitude + 0.005,
-        denominacao: 'Católica Romana',
-      },
-      {
-        nome: 'Paróquia São José',
-        endereco: 'Bairro próximo',
-        latitude: localizacao.latitude + 0.02,
-        longitude: localizacao.longitude - 0.01,
-        denominacao: 'Católica Romana',
-      },
-      {
-        nome: 'Igreja do Sagrado Coração de Jesus',
-        endereco: 'Centro histórico',
-        latitude: localizacao.latitude - 0.01,
-        longitude: localizacao.longitude - 0.015,
-        denominacao: 'Católica Romana',
-      },
-      {
-        nome: 'Santuário Nossa Senhora do Carmo',
-        endereco: 'Região histórica',
-        latitude: localizacao.latitude + 0.005,
-        longitude: localizacao.longitude + 0.02,
-        denominacao: 'Católica Romana',
-      },
-    ];
-
-    return igrejasMock.map((mock, index) => {
-      const lat = mock.latitude || localizacao.latitude;
-      const lon = mock.longitude || localizacao.longitude;
-      const distancia = this.calcularDistancia(
-        localizacao.latitude,
-        localizacao.longitude,
-        lat,
-        lon
-      );
-
-      return {
-        id: `mock-${index}`,
-        nome: mock.nome!,
-        endereco: mock.endereco!,
-        distancia,
-        distanciaFormatada: this.formatarDistancia(distancia),
-        latitude: lat,
-        longitude: lon,
-        denominacao: mock.denominacao || 'Católica Romana',
-      };
-    });
-  }
-
-  /**
-   * Transforma elemento do OSM em IgrejaCatolica
-   */
-  private transformarElementoOSM(
-    element: any,
-    localizacao: LocalizacaoUsuario
-  ): IgrejaCatolica | null {
-    if (!element.lat || !element.lon) return null;
-    if (!element.tags) return null;
-
-    const distancia = this.calcularDistancia(
-      localizacao.latitude,
-      localizacao.longitude,
-      element.lat,
-      element.lon
-    );
-
-    const tags = element.tags;
-
-    if (tags.amenity !== 'place_of_worship') return null;
+  private transformarGooglePlace(place: any, localizacao: LocalizacaoUsuario): IgrejaCatolica {
+    const lat = place.location.latitude;
+    const lng = place.location.longitude;
+    const distancia = this.calcularDistancia(localizacao.latitude, localizacao.longitude, lat, lng);
 
     return {
-      id: `osm-${element.type}-${element.id}`,
-      nome: tags.name || tags['name:pt'] || tags['official_name'] || 'Igreja Católica',
-      endereco: this.construirEndereco(tags),
-      distancia,
+      id: place.id,
+      nome: place.displayName?.text || 'Igreja',
+      endereco: place.formattedAddress || 'Endereço não disponível',
+      latitude: lat,
+      longitude: lng,
+      distancia: distancia,
       distanciaFormatada: this.formatarDistancia(distancia),
-      latitude: element.lat,
-      longitude: element.lon,
-      denominacao: tags.denomination 
-        ? this.formatarDenominacao(tags.denomination)
-        : 'Católica Romana',
-      website: tags.website || tags['contact:website'],
-      telefone: tags.phone || tags['contact:phone'],
-      horarios: this.formatarHorarios(tags),
-      descricao: tags.description || tags['description:pt'],
-      paroquia: tags.parish || tags['operator'],
+      telefone: place.nationalPhoneNumber,
+      website: place.websiteUri,
+      rating: place.rating,
+      userRatingCount: place.userRatingCount,
+      isOpenNow: place.currentOpeningHours?.openNow,
+      horarios: place.currentOpeningHours?.openNow ? 'Aberto agora' : (place.currentOpeningHours ? 'Fechado' : undefined),
+      denominacao: this.inferirDenominacao(place),
     };
   }
 
-  /**
-   * Formata denominação
-   */
-  private formatarDenominacao(denomination: string): string {
-    const map: Record<string, string> = {
-      'catholic': 'Católica Romana',
-      'roman_catholic': 'Católica Romana',
-      'Catholic': 'Católica Romana',
-      'Roman Catholic': 'Católica Romana',
-      'católica': 'Católica Romana',
-    };
-
-    return map[denomination] || denomination;
+  private inferirDenominacao(place: any): string {
+    const types = place.types || [];
+    if (types.includes('catholic_church')) return 'Católica';
+    return 'Igreja';
   }
 
-  /**
-   * Calcula centro de um "way" (polígono)
-   */
-  private calcularCentroWay(way: any, allElements: any[]): { lat: number; lon: number } | null {
-    if (!way.nodes || way.nodes.length === 0) return null;
+  private ehProvavelCatolica(igreja: IgrejaCatolica, rawPlace: any): boolean {
+    const types = rawPlace.types || [];
+    if (types.includes('catholic_church')) return true;
 
-    const nodes = way.nodes
-      .map((nodeId: number) => allElements.find((el: any) => el.type === 'node' && el.id === nodeId))
-      .filter((n: any) => n && n.lat && n.lon);
+    const nomeLower = igreja.nome.toLowerCase();
 
-    if (nodes.length === 0) return null;
+    // Termos que indicam fortemente católica
+    const termosCatolicos = [
+      'paróquia', 'paroquia', 'catedral', 'basílica', 'basilica',
+      'santuário', 'santuario', 'nossa senhora', 'são ', 'santa ', 'santo ',
+      'matriz', 'católica', 'catolica', 'capela'
+    ];
 
-    const sumLat = nodes.reduce((sum: number, node: any) => sum + node.lat, 0);
-    const sumLon = nodes.reduce((sum: number, node: any) => sum + node.lon, 0);
+    // Termos que indicam NÃO católica (evangélica/protestante)
+    const termosNaoCatolicos = [
+      'assembléia', 'assembleia', 'batista', 'universal', 'evangélica', 'evangelica',
+      'presbiteriana', 'adventista', 'metodista', 'pentecostal', 'deus é amor',
+      'renascer', 'bola de neve', 'luterana', 'congregacional', 'quadrangular',
+      'internacional da graça', 'mundial', 'testemunhas de jeová', 'mórmon'
+    ];
 
-    return {
-      lat: sumLat / nodes.length,
-      lon: sumLon / nodes.length,
-    };
+    if (termosNaoCatolicos.some(t => nomeLower.includes(t))) return false;
+    if (termosCatolicos.some(t => nomeLower.includes(t))) return true;
+
+    // Se estiver em dúvida (apenas "Igreja ..."), mantemos por padrão se veio da busca "church", 
+    // mas o risco de falso positivo existe.
+    return true;
   }
 
-  /**
-   * Constrói endereço a partir das tags OSM
-   */
-  private construirEndereco(tags: any): string {
-    const partes: string[] = [];
-
-    if (tags['addr:street']) {
-      let rua = tags['addr:street'];
-      if (tags['addr:housenumber']) {
-        rua += `, ${tags['addr:housenumber']}`;
-      }
-      partes.push(rua);
-    }
-
-    if (tags['addr:neighbourhood']) partes.push(tags['addr:neighbourhood']);
-    if (tags['addr:suburb']) partes.push(tags['addr:suburb']);
-    if (tags['addr:city']) partes.push(tags['addr:city']);
-    if (tags['addr:state']) partes.push(tags['addr:state']);
-    if (tags['addr:postcode']) partes.push(`CEP ${tags['addr:postcode']}`);
-
-    return partes.length > 0 ? partes.join(', ') : 'Endereço não disponível';
-  }
-
-  /**
-   * Formata horários de funcionamento
-   */
-  private formatarHorarios(tags: any): string | undefined {
-    if (tags['service_times:sunday']) {
-      return `Missas domingo: ${tags['service_times:sunday']}`;
-    }
-    if (tags['opening_hours']) {
-      return tags['opening_hours'];
-    }
-    if (tags['service_times']) {
-      return tags['service_times'];
-    }
-    return undefined;
-  }
-
-  /**
-   * Remove igrejas duplicadas
-   */
-  private removerDuplicatas(igrejas: IgrejaCatolica[]): IgrejaCatolica[] {
-    const unicas = new Map<string, IgrejaCatolica>();
-
-    for (const igreja of igrejas) {
-      const chave = `${igreja.nome.toLowerCase()}-${igreja.latitude.toFixed(4)}-${igreja.longitude.toFixed(4)}`;
-      
-      if (!unicas.has(chave)) {
-        unicas.set(chave, igreja);
-      }
-    }
-
-    return Array.from(unicas.values());
-  }
-
-  /**
-   * Enriquece igrejas com endereços completos via Nominatim
-   */
-  private async enriquecerComEnderecos(igrejas: IgrejaCatolica[]): Promise<void> {
-    const nominatimUrl = 'https://nominatim.openstreetmap.org/reverse';
-
-    for (const igreja of igrejas) {
-      if (igreja.endereco === 'Endereço não disponível') {
-        try {
-          const response = await fetch(
-            `${nominatimUrl}?format=json&lat=${igreja.latitude}&lon=${igreja.longitude}&addressdetails=1&zoom=18`,
-            {
-              headers: {
-                'User-Agent': 'FidesApp/1.0 (Catholic Church Finder)',
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.display_name) {
-              igreja.endereco = data.display_name;
-            }
-          }
-
-          // Rate limiting: 1 segundo entre requisições (política Nominatim)
-          await new Promise((resolve) => setTimeout(resolve, 1100));
-        } catch (error) {
-          console.warn('Erro ao buscar endereço para:', igreja.nome, error);
-        }
-      }
-    }
-  }
-
-  /**
-   * Calcula distância entre dois pontos (Haversine)
-   */
   private calcularDistancia(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371e3; // Raio da Terra em metros
     const φ1 = (lat1 * Math.PI) / 180;
@@ -538,9 +275,6 @@ class PlacesService {
     return R * c; // Distância em metros
   }
 
-  /**
-   * Formata distância para exibição
-   */
   private formatarDistancia(metros: number): string {
     if (metros < 1000) {
       return `${Math.round(metros)} m`;
@@ -548,27 +282,19 @@ class PlacesService {
     return `${(metros / 1000).toFixed(1)} km`;
   }
 
-  /**
-   * Abre navegação no Google Maps
-   */
   abrirNavegacao(igreja: IgrejaCatolica): void {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${igreja.latitude},${igreja.longitude}`;
     window.open(url, '_blank');
   }
 
-  /**
-   * Abre no OpenStreetMap
-   */
   abrirNoMapa(igreja: IgrejaCatolica): void {
-    const url = `https://www.openstreetmap.org/?mlat=${igreja.latitude}&mlon=${igreja.longitude}&zoom=18`;
+    // Usar Google Maps já que temos a API
+    const url = `https://www.google.com/maps/search/?api=1&query=${igreja.latitude},${igreja.longitude}&query_place_id=${igreja.id}`;
     window.open(url, '_blank');
   }
 
-  /**
-   * Compartilhar igreja
-   */
   async compartilharIgreja(igreja: IgrejaCatolica): Promise<void> {
-    const texto = `⛪ ${igreja.nome}\n📍 ${igreja.endereco}\n🗺️ https://www.google.com/maps/search/?api=1&query=${igreja.latitude},${igreja.longitude}`;
+    const texto = `⛪ ${igreja.nome}\n📍 ${igreja.endereco}\n🗺️ https://www.google.com/maps/search/?api=1&query=${igreja.latitude},${igreja.longitude}&query_place_id=${igreja.id}`;
 
     if (navigator.share) {
       try {
@@ -577,12 +303,10 @@ class PlacesService {
           text: texto,
         });
       } catch (error) {
-        // Usuário cancelou
         console.log('Compartilhamento cancelado');
       }
     } else {
       await navigator.clipboard.writeText(texto);
-      return Promise.resolve();
     }
   }
 

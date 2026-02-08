@@ -2,30 +2,37 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BottomNav } from "@/components/BottomNav";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import {
-  Bell,
   Sparkles,
-  BookOpen,
   MessageCircle,
-  Church,
+  Bell,
   Heart,
-  TrendingUp,
-  Award,
-  Flame,
   ChevronRight,
-  FileText,
-  BookMarked,
+  Lightbulb,
 } from "lucide-react";
 import { liturgiaService } from "@/services/liturgiaService";
 import { santoService } from "@/services/santoService";
+import { useAuth } from "@/contexts/AuthContext";
+import { ProfileMenu } from "@/components/ProfileMenu";
+import { MyPath } from "@/components/MyPath";
+import { ImDownDrawer } from "@/components/ImDownDrawer";
+import { GuidedSilence } from "@/components/GuidedSilence";
+
+const COR_LITURGICA_SIGNIFICADO: Record<string, { label: string; explicacao: string }> = {
+  verde: { label: "Verde", explicacao: "Tempo Comum, esperança e crescimento na fé." },
+  roxo: { label: "Roxo", explicacao: "Advento e Quaresma, penitência e preparação." },
+  branco: { label: "Branco", explicacao: "Festas do Senhor, Natal e Páscoa, alegria." },
+  vermelho: { label: "Vermelho", explicacao: "Pentecostes e mártires, Espírito Santo e amor." },
+  rosa: { label: "Rosa", explicacao: "Alegria no meio do Advento ou da Quaresma." },
+};
 
 const Home = () => {
   const navigate = useNavigate();
-  
+  const { user } = useAuth();
+
   const [greeting] = useState(() => {
     const hour = new Date().getHours();
     if (hour < 12) return "Bom dia";
@@ -33,361 +40,371 @@ const Home = () => {
     return "Boa noite";
   });
 
-  const userName = "João"; // TODO: Pegar do contexto/storage
+  // Nome: Auth (Supabase) → localStorage (fides_session do login) → "Fiel"
+  const getNomeFromStorage = (): string | null => {
+    try {
+      const raw = localStorage.getItem("fides_session");
+      if (!raw) return null;
+      const data = JSON.parse(raw) as { user?: { full_name?: string; email?: string } };
+      const u = data?.user;
+      return u?.full_name ?? (u?.email ? u.email.split("@")[0] : null) ?? null;
+    } catch {
+      return null;
+    }
+  };
+  const userName =
+    user?.full_name ??
+    (user?.email ? user.email.split("@")[0] : null) ??
+    getNomeFromStorage() ??
+    "Fiel";
 
   const [liturgiaPreview, setLiturgiaPreview] = useState({
-    texto: '',
-    referencia: '',
-    tempoLiturgico: '32º Domingo do Tempo Comum',
-    corLiturgica: 'Verde',
+    texto: "",
+    referencia: "",
+    cor: null as "verde" | "roxo" | "branco" | "vermelho" | "rosa" | null,
+    tempo: "",
     loading: true,
   });
 
   const [santoPreview, setSantoPreview] = useState({
-    nome: '',
-    titulo: '',
-    festa: '',
+    nome: "",
+    titulo: "",
+    festa: "",
     loading: true,
   });
 
-  // Dados mockados de progresso (substituir por dados reais)
   const stats = {
-    streak: 7,
-    lessonsCompleted: 12,
-    prayersToday: 3,
+    diasComDeus: 7,
+    aprendizados: 12,
+    momentosOracao: 3,
   };
 
   useEffect(() => {
-    liturgiaService.buscarLiturgiaDoDia()
+    liturgiaService
+      .buscarLiturgiaDoDia()
       .then((liturgia) => {
-        const evangelho = liturgia.leituras.find((l) => l.tipo === 'evangelho');
+        const evangelho = liturgia.leituras.find((l) => l.tipo === "evangelho");
         if (evangelho) {
           setLiturgiaPreview({
-            texto: evangelho.texto.substring(0, 180) + '...',
+            texto: evangelho.texto.replace(/[0-9]+(?=[a-zA-Zà-úÀ-Ú])/g, "").substring(0, 180) + "...",
             referencia: evangelho.referencia,
-            tempoLiturgico: typeof liturgia.data === 'string' ? liturgia.data : '32º Domingo do Tempo Comum',
-            corLiturgica: 'Verde', // TODO: Extrair da API
+            cor: liturgia.cor ?? null,
+            tempo: liturgia.tempo ?? "",
             loading: false,
           });
         }
       })
-      .catch((error) => {
-        console.error('Erro ao carregar liturgia preview:', error);
+      .catch(() => {
         setLiturgiaPreview({
-          texto: 'Não foi possível carregar a liturgia do dia',
-          referencia: '',
-          tempoLiturgico: 'Tempo Comum',
-          corLiturgica: 'Verde',
+          texto: "Um trecho da Bíblia para refletir hoje.",
+          referencia: "",
+          cor: null,
+          tempo: "",
           loading: false,
         });
       });
 
-    santoService.buscarSantoDoDia()
+    santoService
+      .buscarSantoDoDia()
       .then((santo) => {
         setSantoPreview({
           nome: santo.nome,
           titulo: santo.titulo,
-          festa: '11 de Novembro',
+          festa: santo.dia ?? "",
           loading: false,
         });
       })
       .catch(() => {
         setSantoPreview({
-          nome: 'Erro ao carregar',
-          titulo: '',
-          festa: '',
+          nome: "",
+          titulo: "",
+          festa: "",
           loading: false,
         });
       });
   }, []);
 
-  // Grid de acesso rápido
-  const quickAccess = [
-    { 
-      icon: MessageCircle, 
-      label: 'Catequista', 
-      path: '/catechist',
-      color: 'bg-blue-500',
-      lightColor: 'bg-blue-50 dark:bg-blue-950',
-      textColor: 'text-blue-600 dark:text-blue-400'
-    },
-    { 
-      icon: BookOpen, 
-      label: 'Liturgia', 
-      path: '/liturgy',
-      color: 'bg-purple-500',
-      lightColor: 'bg-purple-50 dark:bg-purple-950',
-      textColor: 'text-purple-600 dark:text-purple-400'
-    },
-    { 
-      icon: Heart, 
-      label: 'Orações', 
-      path: '/prayers',
-      color: 'bg-pink-500',
-      lightColor: 'bg-pink-50 dark:bg-pink-950',
-      textColor: 'text-pink-600 dark:text-pink-400'
-    },
-    { 
-      icon: Church, 
-      label: 'Igrejas', 
-      path: '/churches',
-      color: 'bg-amber-500',
-      lightColor: 'bg-amber-50 dark:bg-amber-950',
-      textColor: 'text-amber-600 dark:text-amber-400'
-    },
-    { 
-      icon: FileText, 
-      label: 'Exame', 
-      path: '/examination',
-      color: 'bg-teal-500',
-      lightColor: 'bg-teal-50 dark:bg-teal-950',
-      textColor: 'text-teal-600 dark:text-teal-400'
-    },
-    { 
-      icon: BookMarked, 
-      label: 'Planos', 
-      path: '/plans',
-      color: 'bg-indigo-500',
-      lightColor: 'bg-indigo-50 dark:bg-indigo-950',
-      textColor: 'text-indigo-600 dark:text-indigo-400'
-    },
+  const intencoes = [
+    { emoji: "🙏", label: "Quero rezar", path: "/prayers" },
+    { emoji: "📖", label: "Quero aprender", path: "/liturgy" },
+    { emoji: "💬", label: "Tenho dúvidas", path: "/catechist" },
+    { emoji: "❤️", label: "Quero agradecer ou pedir algo", path: "/prayers" },
   ];
 
-  const getCorLiturgicaColor = (cor: string) => {
-    switch (cor.toLowerCase()) {
-      case 'verde': return 'bg-green-400';
-      case 'roxo': case 'violeta': return 'bg-purple-400';
-      case 'branco': return 'bg-white';
-      case 'vermelho': return 'bg-red-400';
-      default: return 'bg-green-400';
-    }
-  };
+  // Scroll handler for header styling
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [showSilence, setShowSilence] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background-secondary dark:bg-background-primary">
-      {/* HEADER COM GRADIENTE MARIANO */}
-      <header className="relative bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 px-6 pt-12 pb-32 rounded-b-[32px] shadow-xl overflow-hidden">
-        {/* Decoração de fundo */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/10 to-transparent" />
-        
-        {/* Conteúdo */}
-        <div className="relative z-10">
-          {/* Top bar */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <button className="relative w-11 h-11 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
-                <Bell className="w-5 h-5 text-white" />
-                {/* Notification badge */}
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-primary-600">
-                  3
-                </span>
-              </button>
-              <ThemeToggle />
-            </div>
-          </div>
-          
-          {/* Saudação */}
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-white">
-              {greeting}, {userName}! 🙏
-            </h1>
-            <p className="text-white/90 text-base font-medium">
-              {new Date().toLocaleDateString('pt-BR', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long' 
-              })}
-            </p>
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
-              <div className={`w-2.5 h-2.5 rounded-full ${getCorLiturgicaColor(liturgiaPreview.corLiturgica)}`} />
-              <span className="text-sm font-semibold text-white">
-                {liturgiaPreview.tempoLiturgico}
-              </span>
-            </div>
-          </div>
+    <div className="min-h-screen pb-24 bg-background relative transition-colors duration-300">
+      <div className="absolute top-0 left-0 right-0 h-[320px] bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 dark:from-primary-900/80 dark:via-primary-800/60 dark:to-background pointer-events-none transition-colors duration-300" />
+      {/* Header: ícones à esquerda (sparkle + saudação + 🙏), direita (chat, sino, perfil G) */}
+      <header
+        className={`sticky top-0 z-20 px-6 py-4 flex items-center justify-between transition-all duration-300 ${isScrolled
+          ? "bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-white/10 dark:border-white/5 py-3"
+          : "bg-transparent"
+          }`}
+      >
+        <div className="flex items-center gap-2">
+          <Sparkles className={`w-5 h-5 flex-shrink-0 transition-colors ${isScrolled ? "text-primary-600 dark:text-primary-400" : "text-white/90"}`} />
+          <p className={`font-body text-xl font-medium tracking-tight transition-colors ${isScrolled ? "text-foreground" : "text-white"}`}>
+            {greeting}, {userName}! 🙏
+          </p>
+        </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-8">
+          {[
+            { label: "Início", path: "/home" },
+            { label: "Liturgia", path: "/liturgy" },
+            { label: "Catequista", path: "/catechist" },
+            { label: "Orações", path: "/prayers" },
+          ].map((item) => (
+            <button
+              key={item.label}
+              onClick={() => navigate(item.path)}
+              className={`font-medium text-sm transition-colors ${isScrolled
+                ? "text-muted-foreground hover:text-primary-600 dark:hover:text-primary-400"
+                : "text-white/80 hover:text-white"
+                }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate("/catechist")}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isScrolled
+              ? "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
+              : "text-white/80 hover:bg-white/10"
+              }`}
+          >
+            <MessageCircle className="w-5 h-5" />
+          </button>
+          <button
+            type="button"
+            className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isScrolled
+              ? "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
+              : "text-white/80 hover:bg-white/10"
+              }`}
+          >
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-transparent" />
+          </button>
+
+
+          <ProfileMenu>
+            <button
+              type="button"
+              className="w-10 h-10 rounded-full bg-white dark:bg-primary text-primary-600 dark:text-primary-foreground flex items-center justify-center font-bold text-sm shadow-md transition-colors duration-300"
+            >
+              {userName.charAt(0).toUpperCase()}
+            </button>
+          </ProfileMenu>
         </div>
       </header>
 
-      {/* CONTEÚDO - Cards sobrepostos ao header */}
-      <div className="px-6 -mt-20 pb-28 space-y-6 relative z-20">
-        {/* CARD: LITURGIA DO DIA */}
-        <Card 
-          variant="elevated" 
-          padding="none" 
-          className="overflow-hidden bg-card shadow-2xl"
-          interactive
-          onClick={() => navigate('/liturgy')}
+      <main className="px-6 pt-2 space-y-6 max-w-7xl mx-auto relative z-10">
+        {/* 1️⃣ HERO PRINCIPAL - céu/nuvens (back1) + texto à esquerda + Jesus à direita */}
+        <Card
+          className="overflow-hidden rounded-3xl border border-primary-200/50 dark:border-primary-800/50 shadow-lg relative min-h-[240px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[400px] bg-[#E0F2FE] dark:bg-[#1e293b]"
         >
-          {/* Header do card */}
-          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950 px-5 py-4 border-b border-purple-100 dark:border-purple-800">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wide text-purple-700 dark:text-purple-400">
-                    Liturgia do Dia
-                  </h3>
-                  <p className="text-xs text-text-secondary mt-0.5">
-                    Toque para ler completa
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-text-tertiary" />
-            </div>
-          </div>
-          
-          {/* Preview do Evangelho */}
-          <div className="p-5">
-            {liturgiaPreview.loading ? (
-              <LoadingSpinner size="sm" text="Carregando..." />
-            ) : (
-              <>
-                <Badge variant="primary" className="mb-3">
-                  <BookOpen className="w-3 h-3" />
-                  {liturgiaPreview.referencia}
-                </Badge>
-                <p className="font-serif text-base text-text-primary dark:text-text-primary line-clamp-3 leading-relaxed">
-                  {liturgiaPreview.texto}
-                </p>
-              </>
-            )}
-          </div>
-        </Card>
-
-        {/* CARD: PROGRESSO/STREAK */}
-        <Card padding="lg">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-              Seu Progresso
-            </h3>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate('/plans')}
-            >
-              Ver tudo
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-3">
-            {/* Sequência */}
-            <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 rounded-2xl p-4 border border-orange-100 dark:border-orange-800">
-              <div className="flex items-center justify-center w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full mb-2 mx-auto">
-                <Flame className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-              </div>
-              <p className="text-2xl font-bold text-center text-orange-600 dark:text-orange-400">
-                {stats.streak}
+          <div
+            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat pointer-events-none"
+            style={{ backgroundImage: "url('/back1.png')" }}
+          />
+          <div className="relative z-10 p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            {/* Esquerda: título, subtítulo, CTA */}
+            <div className="flex-1 space-y-3 sm:space-y-4 max-w-md">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-semibold text-primary leading-tight">
+                Comece seu momento com Deus
+              </h1>
+              <p className="text-muted-foreground font-body text-base sm:text-lg">
+                Um passo simples para hoje
               </p>
-              <p className="text-xs text-center text-text-secondary mt-1">
-                dias seguidos
-              </p>
-            </div>
-            
-            {/* Lições */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-2xl p-4 border border-blue-100 dark:border-blue-800">
-              <div className="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full mb-2 mx-auto">
-                <Award className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <p className="text-2xl font-bold text-center text-blue-600 dark:text-blue-400">
-                {stats.lessonsCompleted}
-              </p>
-              <p className="text-xs text-center text-text-secondary mt-1">
-                lições feitas
-              </p>
-            </div>
-            
-            {/* Orações */}
-            <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950 dark:to-rose-950 rounded-2xl p-4 border border-pink-100 dark:border-pink-800">
-              <div className="flex items-center justify-center w-10 h-10 bg-pink-100 dark:bg-pink-900 rounded-full mb-2 mx-auto">
-                <Heart className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-              </div>
-              <p className="text-2xl font-bold text-center text-pink-600 dark:text-pink-400">
-                {stats.prayersToday}
-              </p>
-              <p className="text-xs text-center text-text-secondary mt-1">
-                orações hoje
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* GRID: ACESSO RÁPIDO */}
-        <div>
-          <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-4 px-1">
-            Acesso Rápido
-          </h3>
-          <div className="grid grid-cols-3 gap-3">
-            {quickAccess.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`${item.lightColor} rounded-2xl p-4 border border-border-light hover:border-border-default transition-all active:scale-95 flex flex-col items-center gap-3`}
+              <Button
+                size="lg"
+                className="w-full sm:w-auto bg-gradient-to-r from-accent-300 to-accent-500 hover:from-accent-400 hover:to-accent-600 text-accent-foreground dark:text-primary font-semibold text-base h-14 sm:h-16 px-8 sm:px-10 rounded-xl shadow-md border border-accent-400/50 transition-all duration-300"
+                onClick={() => navigate("/prayers")}
               >
-                <div className={`w-12 h-12 ${item.color} rounded-xl flex items-center justify-center shadow-lg`}>
-                  <item.icon className="w-6 h-6 text-white" />
-                </div>
-                <span className={`text-sm font-semibold ${item.textColor} text-center`}>
-                  {item.label}
-                </span>
-              </button>
-            ))}
+                <span className="mr-2">🙏</span>
+                Rezar agora (3 minutos)
+              </Button>
+            </div>
           </div>
+        </Card>
+
+        {/* 1.5️⃣ ACTION BUTTONS: Estou Mal & Silêncio */}
+        <div className="grid grid-cols-2 gap-3">
+          <ImDownDrawer>
+            <button className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-white border border-rose-100 shadow-sm hover:bg-rose-50 transition-colors group">
+              <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <span className="text-lg">❤️‍🩹</span>
+              </div>
+              <div className="text-left">
+                <span className="block text-sm font-bold text-gray-700">Estou mal hoje</span>
+                <span className="block text-[10px] text-gray-500">Receber apoio</span>
+              </div>
+            </button>
+          </ImDownDrawer>
+
+          <button
+            onClick={() => setShowSilence(true)}
+            className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-white border border-sky-100 shadow-sm hover:bg-sky-50 transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <span className="text-lg">🤫</span>
+            </div>
+            <div className="text-left">
+              <span className="block text-sm font-bold text-gray-700">Silêncio</span>
+              <span className="block text-[10px] text-gray-500">Timer guiado</span>
+            </div>
+          </button>
         </div>
 
-        {/* CARD: SANTO DO DIA */}
-        <Card 
-          variant="gradient"
-          padding="none"
-          interactive
-          onClick={() => navigate('/santo')}
+        <GuidedSilence open={showSilence} onOpenChange={setShowSilence} />
+
+        {/* 2️⃣ EVANGELHO DO DIA - card branco com sombra */}
+        <Card
+          className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow bg-white/95 dark:bg-card/95 shadow-md border-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/back2.png')" }}
+          onClick={() => navigate("/liturgy")}
         >
-          <div className="relative p-6">
-            {/* Decoração */}
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-            
-            <div className="relative flex items-center gap-4">
-              {/* Ícone */}
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-8 h-8 text-white" />
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-heading font-semibold text-primary">
+                Evangelho de hoje
+              </h2>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/liturgy");
+                }}
+                className="text-sm text-primary hover:underline font-medium"
+              >
+                Ver tudo
+              </button>
+            </div>
+            {liturgiaPreview.loading ? (
+              <LoadingSpinner size="sm" />
+            ) : (
+              <p className="font-body text-text-primary dark:text-text-primary text-base line-clamp-3 leading-relaxed mb-4">
+                {liturgiaPreview.texto}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/liturgy");
+              }}
+              className="inline-flex items-center gap-2 text-primary font-medium text-sm hover:underline"
+            >
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+              Ler com explicação simples
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            {liturgiaPreview.cor && COR_LITURGICA_SIGNIFICADO[liturgiaPreview.cor] && (
+              <div className="mt-3 pt-3 border-t border-border/50">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Cor Litúrgica
+                </p>
+                <p className="text-sm font-medium text-foreground mt-0.5">
+                  {COR_LITURGICA_SIGNIFICADO[liturgiaPreview.cor].label}
+                </p>
+                <p className="text-xs text-muted-foreground font-body mt-0.5">
+                  {COR_LITURGICA_SIGNIFICADO[liturgiaPreview.cor].explicacao}
+                </p>
               </div>
-              
-              {/* Texto */}
-              <div className="flex-1">
-                {santoPreview.loading ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  <>
-                    <p className="text-xs font-semibold text-white/80 uppercase tracking-wide mb-1">
-                      🌟 Santo do Dia
-                    </p>
-                    <h4 className="text-lg font-bold text-white mb-1">
-                      {santoPreview.nome}
-                    </h4>
-                    <p className="text-sm text-white/90">
-                      {santoPreview.festa}
-                    </p>
-                  </>
-                )}
+            )}
+            <p className="mt-3 text-xs text-muted-foreground font-body flex items-start gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-primary/70 flex-shrink-0 mt-0.5" />
+              A Liturgia é a leitura bíblica rezada todos os dias pela Igreja.
+            </p>
+          </div>
+        </Card>
+
+        {/* 3️⃣ MEU CAMINHO - Novo componente de hábito */}
+        <MyPath />
+
+
+
+        {/* 5️⃣ SANTO DO DIA - duas colunas: esquerda (santo + botão), direita (Liturgia + citação) */}
+        {/* 5️⃣ SANTO DO DIA - Redesigned to match layout */}
+        <Card
+          className="overflow-hidden bg-cover bg-center hover:shadow-lg transition-shadow bg-amber-50/50 dark:bg-card/95 shadow-md border-0"
+          style={{ backgroundImage: "url('/back-saint-light.png')" }} // Hypothetical background, using subtle variation or just color
+          onClick={() => navigate("/santo")}
+        >
+          <div className="p-6 flex flex-col md:flex-row gap-6 items-center">
+            {/* Esquerda: Avatar + Nome */}
+            <div className="flex-shrink-0 relative">
+              <div className="w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
+                {/* Placeholder image or specific saint image if available */}
+                <img src="/saint-placeholder.png" alt="Santo do dia" className="w-full h-full object-cover" onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }} />
+                <div className="hidden w-full h-full items-center justify-center bg-primary/10">
+                  <Sparkles className="w-10 h-10 text-primary" />
+                </div>
               </div>
-              
-              {/* Chevron */}
-              <ChevronRight className="w-6 h-6 text-white/60 flex-shrink-0" />
+              <span className="absolute -bottom-1 -right-1 text-2xl">☁️</span>
+            </div>
+
+            {/* Meio: Informações */}
+            <div className="flex-1 text-center md:text-left space-y-1">
+              <p className="text-sm font-semibold text-text-primary/70 flex items-center justify-center md:justify-start gap-1">
+                Santo de hoje 🕊️
+              </p>
+              <h3 className="text-2xl font-heading font-bold text-primary-900 dark:text-primary-100">
+                {santoPreview.nome || "São Martinho"}
+              </h3>
+              <p className="text-muted-foreground">{santoPreview.titulo || "Um exemplo de fé para se inspirar"}</p>
+
+              <Button
+                size="sm"
+                className="mt-2 rounded-full px-6 bg-primary/20 hover:bg-primary/30 text-primary-900 border-0 shadow-none font-semibold"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/santo");
+                }}
+              >
+                Conhecer a história (1 min) <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+
+            {/* Direita: Card Citação/Liturgia Light */}
+            <div className="flex-1 w-full md:max-w-xs bg-white/60 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-4 border border-white/50">
+              <div className="flex items-start gap-3 mb-3 pb-3 border-b border-black/5">
+                <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-primary-900 dark:text-primary-100 leading-tight">
+                    A Liturgia é a leitura <span className="font-normal text-muted-foreground">bíblica rezada todos os dias pela Igreja.</span>
+                  </p>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground italic">
+                <span className="text-xl text-primary/40 mr-1">"</span>
+                Eu era soldado de Cristo: não me é lícito lutar.
+              </p>
             </div>
           </div>
         </Card>
-      </div>
+      </main>
 
-      {/* Bottom Navigation */}
       <BottomNav />
     </div>
   );
