@@ -91,11 +91,11 @@ const PrayNow = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary via-primary to-primary/90 text-white flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4">
+      {/* Header - interface em sans-serif */}
+      <div className="flex items-center justify-between p-4 font-sans">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-background/10 transition-colors"
         >
           <X className="w-5 h-5" />
           <span className="text-sm font-medium">Sair</span>
@@ -113,11 +113,11 @@ const PrayNow = () => {
       {/* Prayer Content */}
       <div className="flex-1 flex items-center justify-center px-8 py-12 overflow-y-auto">
         <div className="max-w-2xl w-full animate-fade-in">
-          <h2 className="text-2xl font-serif font-semibold text-center mb-8 text-accent">
+          <h2 className="text-2xl font-serif font-semibold text-center mb-8 text-primary-foreground">
             {prayer.title}
           </h2>
           <p
-            className="font-serif leading-loose text-center whitespace-pre-line text-white/95"
+            className="font-serif leading-loose text-center whitespace-pre-line text-primary-foreground"
             style={{ fontSize: `${fontSize}px` }}
           >
             {prayer.content}
@@ -125,21 +125,21 @@ const PrayNow = () => {
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="bg-black/20 backdrop-blur-sm border-t border-white/10 p-6">
+      {/* Controls - interface em sans-serif */}
+      <div className="bg-black/20 backdrop-blur-sm border-t border-white/10 p-6 font-sans">
         <div className="max-w-md mx-auto space-y-4">
           {/* Font Size Control */}
           <div className="flex items-center justify-center gap-4 mb-4">
             <button
               onClick={() => setFontSize((prev) => Math.max(14, prev - 2))}
-              className="px-3 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+              className="px-3 py-2 bg-background/10 rounded-lg hover:bg-background/20 transition-colors"
             >
               A-
             </button>
             <span className="text-sm text-white/60">Tamanho do texto</span>
             <button
               onClick={() => setFontSize((prev) => Math.min(28, prev + 2))}
-              className="px-3 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+              className="px-3 py-2 bg-background/10 rounded-lg hover:bg-background/20 transition-colors"
             >
               A+
             </button>
@@ -150,7 +150,7 @@ const PrayNow = () => {
             {useTimer && (
               <button
                 onClick={() => setIsRunning(!isRunning)}
-                className="flex-1 py-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors flex items-center justify-center gap-2 font-medium"
+                className="flex-1 py-3 bg-background/10 rounded-xl hover:bg-background/20 transition-colors flex items-center justify-center gap-2 font-medium"
               >
                 {isRunning ? (
                   <>
@@ -170,7 +170,7 @@ const PrayNow = () => {
               onClick={handleComplete}
               className="flex-1 py-3 bg-success rounded-xl hover:bg-success/90 transition-colors flex items-center justify-center gap-2 font-medium"
             >
-              <Check className="w-5 h-5" />
+              <Check className="w-5 h-5 text-secondary" />
               Concluir
             </button>
           </div>

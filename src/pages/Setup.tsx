@@ -100,7 +100,7 @@ const Setup = () => {
         {currentStep === 0 && (
           <div className="space-y-8">
             <div className="space-y-3">
-              <h2 className="text-3xl font-heading font-semibold text-primary">
+              <h2 className="text-2xl md:text-3xl font-heading font-semibold text-primary">
                 Onde você está na sua jornada de fé?
               </h2>
               <p className="text-muted-foreground font-body">
@@ -142,7 +142,7 @@ const Setup = () => {
           <div className="space-y-8">
             <div className="space-y-3">
               <div className="flex justify-between items-start">
-                <h2 className="text-3xl font-heading font-semibold text-primary">
+                <h2 className="text-2xl md:text-3xl font-heading font-semibold text-primary">
                   Quais temas mais te interessam?
                 </h2>
                 <Button
@@ -190,7 +190,7 @@ const Setup = () => {
         {currentStep === 2 && (
           <div className="space-y-8">
             <div className="space-y-3">
-              <h2 className="text-3xl font-heading font-semibold text-primary">
+              <h2 className="text-2xl md:text-3xl font-heading font-semibold text-primary">
                 Quanto tempo você tem por dia?
               </h2>
               <p className="text-muted-foreground font-body">
@@ -221,7 +221,7 @@ const Setup = () => {
         {currentStep === 3 && (
           <div className="space-y-8">
             <div className="space-y-3">
-              <h2 className="text-3xl font-heading font-semibold text-primary">
+              <h2 className="text-2xl md:text-3xl font-heading font-semibold text-primary">
                 Quando gostaria de receber lembretes?
               </h2>
               <p className="text-muted-foreground font-body">

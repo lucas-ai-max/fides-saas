@@ -22,39 +22,58 @@ export default {
         'xs': '375px',
       },
       colors: {
-        // Primary - Azul Mariano
+        // Primary - Azul Mariano (tema via CSS vars: texto branco sobre fundo)
         primary: {
-          50: 'hsl(214, 100%, 97%)',
-          100: 'hsl(214, 95%, 93%)',
-          200: 'hsl(213, 97%, 87%)',
-          300: 'hsl(212, 96%, 78%)',
-          400: 'hsl(213, 94%, 68%)',
-          500: 'hsl(217, 91%, 60%)',
-          600: 'hsl(221, 83%, 53%)',
-          700: 'hsl(224, 76%, 48%)',
-          800: 'hsl(226, 71%, 40%)',
-          900: 'hsl(224, 64%, 33%)',
+          50: 'hsl(var(--primary) / 0.08)',
+          100: 'hsl(var(--primary) / 0.15)',
+          200: 'hsl(var(--primary) / 0.3)',
+          300: 'hsl(var(--primary) / 0.5)',
+          400: 'hsl(var(--primary) / 0.7)',
+          500: 'hsl(var(--primary))',
+          600: 'hsl(var(--primary-dark))',
+          700: 'hsl(var(--primary-dark))',
+          800: 'hsl(var(--primary-dark))',
+          900: 'hsl(var(--primary-dark))',
+          950: 'hsl(var(--primary-dark))',
           DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
           light: 'hsl(var(--primary-light))',
+          dark: 'hsl(var(--primary-dark))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
 
-        // Accent - Dourado
+        // Secondary - Dourado (tema via CSS vars: texto branco sobre fundo)
+        secondary: {
+          50: 'hsl(var(--accent) / 0.12)',
+          100: 'hsl(var(--accent) / 0.2)',
+          200: 'hsl(var(--accent) / 0.35)',
+          300: 'hsl(var(--accent) / 0.5)',
+          400: 'hsl(var(--accent) / 0.7)',
+          500: 'hsl(var(--accent))',
+          600: 'hsl(var(--accent-dark))',
+          700: 'hsl(var(--accent-dark))',
+          800: 'hsl(var(--accent-dark))',
+          900: 'hsl(var(--accent-dark))',
+          950: 'hsl(var(--accent-dark))',
+          DEFAULT: 'hsl(var(--secondary))',
+          light: 'hsl(var(--accent-light))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
         accent: {
-          50: 'hsl(48, 100%, 96%)',
-          100: 'hsl(48, 96%, 89%)',
-          200: 'hsl(48, 97%, 77%)',
-          300: 'hsl(46, 97%, 65%)',
-          400: 'hsl(43, 96%, 56%)',
-          500: 'hsl(38, 92%, 50%)',
-          600: 'hsl(32, 95%, 44%)',
-          700: 'hsl(26, 90%, 37%)',
-          800: 'hsl(23, 83%, 31%)',
-          900: 'hsl(22, 78%, 26%)',
+          50: 'hsl(var(--accent) / 0.12)',
+          100: 'hsl(var(--accent) / 0.2)',
+          200: 'hsl(var(--accent) / 0.35)',
+          300: 'hsl(var(--accent) / 0.5)',
+          400: 'hsl(var(--accent) / 0.7)',
+          500: 'hsl(var(--accent))',
+          600: 'hsl(var(--accent-dark))',
+          700: 'hsl(var(--accent-dark))',
+          800: 'hsl(var(--accent-dark))',
+          900: 'hsl(var(--accent-dark))',
+          950: 'hsl(var(--accent-dark))',
           DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
           light: 'hsl(var(--accent-light))',
           dark: 'hsl(var(--accent-dark))',
+          foreground: 'hsl(var(--accent-foreground))',
         },
 
         // Semantic colors
@@ -79,7 +98,7 @@ export default {
           dark: 'hsl(var(--info-dark))',
         },
 
-        // Background colors
+        // Background - off-white suave (light) / azul noturno (dark) via CSS vars
         background: {
           DEFAULT: 'hsl(var(--background))',
           secondary: 'hsl(var(--background-secondary))',
@@ -87,6 +106,7 @@ export default {
           elevated: 'hsl(var(--background-elevated))',
           soft: 'hsl(var(--background-soft))',
         },
+        'secondary-bg': 'hsl(var(--background-secondary))',
 
         // Text colors
         text: {
@@ -101,6 +121,7 @@ export default {
         border: {
           light: 'hsl(var(--border-light))',
           DEFAULT: 'hsl(var(--border))',
+          default: 'hsl(var(--border))',
           medium: 'hsl(var(--border-medium))',
           strong: 'hsl(var(--border-strong))',
         },
@@ -114,6 +135,7 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        /* Texto principal: alto contraste com background (WCAG AA). Ver --foreground em index.css */
         foreground: 'hsl(var(--foreground))',
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
@@ -121,15 +143,12 @@ export default {
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
+          /* Texto secundário: contraste ≥4.5:1 para leitura (WCAG AA) */
           foreground: 'hsl(var(--muted-foreground))',
         },
         popover: {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
         },
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

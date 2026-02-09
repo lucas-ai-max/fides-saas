@@ -79,7 +79,7 @@ const Prayers = () => {
     <div className="min-h-screen bg-background-secondary pb-28">
       {/* Header with Gradient */}
       <header className="sticky top-0 z-50 bg-gradient-to-r from-primary to-primary-600 shadow-lg">
-        <div className="flex items-center justify-between px-4 py-4">
+        <div className="flex items-center justify-between px-4 md:px-6 py-4">
           <button
             onClick={() => navigate(-1)}
             className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 dark:hover:bg-primary-900/40 transition-colors"
@@ -94,7 +94,7 @@ const Prayers = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="px-4 pb-4">
+        <div className="px-4 md:px-6 pb-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
@@ -109,13 +109,13 @@ const Prayers = () => {
       </header>
 
       {/* Time Filters - Horizontal Scroll */}
-      <div className="px-4 py-4 bg-card border-b border-border">
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="px-4 md:px-6 py-4 bg-card border-b border-border">
+        <div className="flex gap-3 md:gap-4 overflow-x-auto pb-1 scrollbar-hide scroll-smooth">
           {timeFilters.map((filter) => (
             <button
               key={filter.id}
               onClick={() => setSelectedFilter(filter.id as any)}
-              className={`flex-shrink-0 px-5 py-3 rounded-2xl text-sm font-semibold transition-all ${
+              className={`flex-shrink-0 min-h-[44px] px-5 py-3 rounded-2xl text-sm font-semibold transition-all touch-manipulation ${
                 selectedFilter === filter.id
                   ? `bg-gradient-to-r ${filter.gradient} border-2 border-primary shadow-md scale-105`
                   : 'bg-muted border-2 border-transparent hover:border-border'
@@ -139,7 +139,7 @@ const Prayers = () => {
         </div>
       )}
       {error && !loading && (
-        <div className="px-4 py-8 text-center">
+        <div className="px-4 md:px-6 py-8 text-center">
           <p className="text-destructive font-medium">Não foi possível carregar as orações.</p>
           <p className="text-sm text-muted-foreground mt-1">{error.message}</p>
         </div>
@@ -147,7 +147,7 @@ const Prayers = () => {
 
       {/* Counter */}
       {!loading && !error && filteredPrayers.length > 0 && (
-        <div className="px-4 py-3">
+        <div className="px-4 md:px-6 py-3">
           <p className="text-sm text-muted-foreground">
             <span className="font-bold text-primary">{filteredPrayers.length}</span>{' '}
             {filteredPrayers.length === 1 ? 'oração encontrada' : 'orações encontradas'}
@@ -157,7 +157,7 @@ const Prayers = () => {
 
       {/* Lista de Orações */}
       {!loading && !error && (
-      <div className="px-4 space-y-4">
+      <div className="px-4 md:px-6 space-y-4">
         {filteredPrayers.length === 0 ? (
           // Empty State
           <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -198,7 +198,7 @@ const Prayers = () => {
           filteredPrayers.map((prayer) => (
             <div
               key={prayer.id}
-              className="bg-card rounded-2xl border border-border shadow-sm hover:shadow-lg transition-all overflow-hidden group"
+              className="bg-card rounded-2xl border border-border shadow-sm dark:border-white/10 hover:shadow-lg transition-all overflow-hidden group"
             >
               {/* Card Header */}
               <div className="p-5 border-b border-border bg-gradient-to-r from-primary/5 to-accent/5">

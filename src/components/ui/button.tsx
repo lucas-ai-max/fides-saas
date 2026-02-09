@@ -10,13 +10,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-b from-primary-600 to-primary-700 text-white shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:from-primary-500 hover:to-primary-600 focus-visible:ring-primary/50",
-        primary: "bg-gradient-to-b from-primary-600 to-primary-700 text-white shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:from-primary-500 hover:to-primary-600 focus-visible:ring-primary/50",
+        default: "bg-gradient-to-b from-primary-600 to-primary-700 text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:from-primary-500 hover:to-primary-600 focus-visible:ring-primary/50",
+        primary: "bg-gradient-to-b from-primary-600 to-primary-700 text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:from-primary-500 hover:to-primary-600 focus-visible:ring-primary/50",
         secondary: "bg-background-secondary dark:bg-background-tertiary border-2 border-border-default text-text-primary hover:bg-background-tertiary dark:hover:bg-background-soft hover:border-border-medium focus-visible:ring-primary/30",
-        accent: "bg-gradient-to-b from-accent-500 to-accent-600 text-white shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 hover:from-accent-400 hover:to-accent-500 focus-visible:ring-accent/50",
+        accent: "bg-gradient-to-b from-accent-500 to-accent-600 text-accent-foreground shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 hover:from-accent-400 hover:to-accent-500 focus-visible:ring-accent/50",
         ghost: "text-text-secondary hover:bg-background-secondary hover:text-text-primary focus-visible:ring-primary/30 dark:hover:bg-background-tertiary",
         outline: "border-2 border-border-default bg-transparent hover:bg-background-secondary text-text-primary focus-visible:ring-primary/30 dark:hover:bg-background-tertiary",
-        destructive: "bg-gradient-to-b from-error to-error-dark text-white shadow-lg shadow-error/30 hover:shadow-xl hover:shadow-error/40 focus-visible:ring-error/50",
+        destructive: "bg-gradient-to-b from-error to-error-dark text-destructive-foreground shadow-lg shadow-error/30 hover:shadow-xl hover:shadow-error/40 focus-visible:ring-error/50",
         link: "text-primary underline-offset-4 hover:underline focus-visible:ring-0 px-0 h-auto",
       },
       size: {

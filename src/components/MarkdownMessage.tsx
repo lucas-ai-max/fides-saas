@@ -98,13 +98,13 @@ const MarkdownMessage = ({ content, isAssistant = false, enableTyping = false }:
             const isInline = !className;
             if (isInline) {
               return (
-                <code className={`${isAssistant ? 'bg-white/10 text-accent-light' : 'bg-gray-100 text-accent-dark'} px-1.5 py-0.5 rounded text-sm font-mono`}>
+                <code className={`${isAssistant ? 'bg-primary-foreground/10 text-accent-light' : 'bg-muted text-accent'} px-1.5 py-0.5 rounded text-sm font-mono`}>
                   {children}
                 </code>
               );
             }
             return (
-              <code className={`${isAssistant ? 'bg-white/5 text-white/90' : 'bg-gray-50 text-gray-900'} block p-3 rounded-lg text-sm font-mono overflow-x-auto`}>
+              <code className={`${isAssistant ? 'bg-primary-foreground/5 text-primary-foreground/90' : 'bg-muted text-foreground'} block p-3 rounded-lg text-sm font-mono overflow-x-auto`}>
                 {children}
               </code>
             );
@@ -114,7 +114,7 @@ const MarkdownMessage = ({ content, isAssistant = false, enableTyping = false }:
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${isAssistant ? 'text-accent-light hover:text-accent' : 'text-primary hover:text-primary-dark'} underline font-medium transition-colors`}
+              className={`${isAssistant ? 'text-accent-light hover:text-accent' : 'text-primary hover:opacity-90'} underline font-medium transition-colors`}
             >
               {children}
             </a>

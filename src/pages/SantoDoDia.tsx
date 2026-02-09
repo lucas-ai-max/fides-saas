@@ -85,16 +85,16 @@ export default function SantoDoDiaPage() {
   const fraseMarcante = "Quem a Deus tem, nada lhe falta. Só Deus basta."; // Santa Teresa de Ávila placeholder
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] pb-28">
+    <div className="min-h-screen bg-background pb-28">
       {/* Header Transparente */}
-      <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-border/50">
+      <header className="fixed top-0 w-full z-50 bg-card/80 backdrop-blur-md border-b border-border">
         <div className="max-w-3xl mx-auto flex items-center justify-between p-4">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors">
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors">
+            <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
-          <span className="text-sm font-medium text-gray-500 uppercase tracking-widest">{santo.dia}</span>
-          <button onClick={share} className="p-2 -mr-2 hover:bg-black/5 rounded-full transition-colors">
-            <Share2 className="w-5 h-5 text-gray-700" />
+          <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">{santo.dia}</span>
+          <button onClick={share} className="p-2 -mr-2 hover:bg-muted rounded-full transition-colors">
+            <Share2 className="w-5 h-5 text-foreground" />
             {/* Note: share function needs to be renamed or consistent */}
           </button>
         </div>
@@ -104,55 +104,55 @@ export default function SantoDoDiaPage() {
 
         {/* Hero Section */}
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-b from-amber-100 to-amber-50 p-1 shadow-lg ring-4 ring-white">
+          <div className="w-32 h-32 rounded-full bg-gradient-to-b from-accent/20 to-accent/10 p-1 shadow-lg ring-4 ring-card">
             {santo.imagem ? (
               <img src={santo.imagem} alt={santo.nome} className="w-full h-full object-cover rounded-full" />
             ) : (
-              <div className="w-full h-full rounded-full bg-amber-100 flex items-center justify-center text-4xl">🕊️</div>
+              <div className="w-full h-full rounded-full bg-accent/15 flex items-center justify-center text-4xl">🕊️</div>
             )}
           </div>
           <div>
-            <h1 className="font-heading text-3xl font-bold text-gray-900 mb-1">{santo.nome}</h1>
-            <p className="text-amber-600 font-medium">{santo.titulo}</p>
+            <h1 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-1">{santo.nome}</h1>
+            <p className="text-accent font-medium">{santo.titulo}</p>
           </div>
         </div>
 
         {/* Em 1 minuto */}
-        <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <section className="bg-card p-6 rounded-3xl shadow-sm border border-border">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 bg-blue-500 rounded-full" />
-            <h2 className="font-heading font-semibold text-gray-800">Em 1 minuto</h2>
+            <div className="w-1 h-5 bg-primary rounded-full" />
+            <h2 className="font-heading font-semibold text-foreground">Em 1 minuto</h2>
           </div>
-          <p className="font-serif text-lg leading-relaxed text-gray-600">
+          <p className="font-serif text-lg leading-relaxed text-muted-foreground">
             {resumoBot}
           </p>
         </section>
 
         {/* Lição Prática */}
-        <section className="bg-green-50/50 p-6 rounded-3xl border border-green-100">
+        <section className="bg-success-light/30 dark:bg-success/10 p-6 rounded-3xl border border-border">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">🌱</span>
-            <h2 className="font-heading font-semibold text-green-900">O que aprender hoje</h2>
+            <h2 className="font-heading font-semibold text-foreground">O que aprender hoje</h2>
           </div>
-          <p className="text-green-800 font-medium">
+          <p className="text-foreground font-medium">
             {licaoPratica}
           </p>
         </section>
 
         {/* Frase */}
         <section className="relative py-8 px-4">
-          <span className="absolute top-0 left-0 text-6xl text-amber-200 font-serif">“</span>
-          <blockquote className="font-serif text-2xl text-center text-gray-800 italic relative z-10 px-4">
+          <span className="absolute top-0 left-0 text-6xl text-accent/30 font-serif">“</span>
+          <blockquote className="font-serif text-2xl text-center text-foreground italic relative z-10 px-4">
             {fraseMarcante}
           </blockquote>
-          <span className="absolute bottom-0 right-0 text-6xl text-amber-200 font-serif leading-none">”</span>
+          <span className="absolute bottom-0 right-0 text-6xl text-accent/30 font-serif leading-none">”</span>
         </section>
 
         {/* Actions */}
         <div className="flex gap-3">
           <button
             onClick={toggleSalvar}
-            className={`flex-1 py-3.5 rounded-xl font-medium border transition-all flex items-center justify-center gap-2 ${salvo ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+            className={`flex-1 py-3.5 rounded-xl font-medium border transition-all flex items-center justify-center gap-2 ${salvo ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-card border-border text-foreground hover:bg-muted'
               }`}
           >
             <Bookmark className={`w-4 h-4 ${salvo ? 'fill-current' : ''}`} />

@@ -169,7 +169,7 @@ const Library = () => {
         </h1>
       </header>
 
-      <div className="p-4 max-w-2xl mx-auto space-y-4">
+      <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-4">
         <p className="text-muted-foreground font-body text-sm mb-6">
           Guias essenciais para quem está começando na fé. Toque em um card para ler.
         </p>
@@ -184,7 +184,7 @@ const Library = () => {
             return (
               <Card
                 key={guide.id}
-                className="overflow-hidden border-border hover:border-primary-200 dark:hover:border-primary-800 transition-colors cursor-pointer shadow-sm hover:shadow-md"
+                className="overflow-hidden border border-border dark:border-white/10 hover:border-primary-200 dark:hover:border-primary-800 transition-colors cursor-pointer shadow-sm hover:shadow-md"
                 onClick={() => setOpenGuide(guide.id)}
               >
                 <CardContent className="p-4 flex items-center gap-4">

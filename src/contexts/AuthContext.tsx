@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { api, type AuthUser, type Session } from "@/services/api";
+import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "fides_session";
 
@@ -27,6 +28,18 @@ function saveSession(data: { user: AuthUser; session: Session } | null) {
   } else {
     localStorage.removeItem(STORAGE_KEY);
   }
+}
+
+/** Sincroniza a sessão da API com o cliente Supabase para RLS (ex.: user_favorites). */
+async function syncSupabaseSession(session: Session | null) {
+  if (!session?.access_token || !session?.refresh_token) {
+    await supabase.auth.signOut();
+    return;
+  }
+  await supabase.auth.setSession({
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+  });
 }
 
 type AuthState = {
@@ -56,10 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = useCallback(async () => {
     const stored = loadSession();
     if (!stored?.session?.access_token) {
+      await syncSupabaseSession(null);
       setState((s) => ({ ...s, loading: false, user: null, session: null, isAuthenticated: false }));
       return;
     }
     try {
+      await syncSupabaseSession(stored.session);
       const user = await api.auth.me(stored.session.access_token);
       setState((s) => ({
         ...s,
@@ -71,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       try {
         const refreshed = await api.auth.refresh(stored.session.refresh_token);
+        await syncSupabaseSession(refreshed.session);
         const user = await api.auth.me(refreshed.session.access_token);
         const next = { user, session: refreshed.session };
         saveSession(next);
@@ -82,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } catch {
         saveSession(null);
+        await syncSupabaseSession(null);
         setState((s) => ({
           ...s,
           user: null,
@@ -96,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = loadSession();
     if (!stored) {
+      syncSupabaseSession(null);
       setState((s) => ({ ...s, loading: false }));
       return;
     }
@@ -105,12 +123,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session: stored.session,
       isAuthenticated: true,
     }));
-    refreshUser();
+    syncSupabaseSession(stored.session).then(() => refreshUser());
   }, [refreshUser]);
 
   const login = useCallback(async (email: string, password: string) => {
     const data = await api.auth.login(email, password);
     saveSession(data);
+    await syncSupabaseSession(data.session);
     setState({
       user: data.user,
       session: data.session,
@@ -124,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await api.auth.register(email, password, name);
       if (data.session) {
         saveSession({ user: data.user, session: data.session });
+        await syncSupabaseSession(data.session);
         setState({
           user: data.user,
           session: data.session,
@@ -140,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     saveSession(null);
+    await syncSupabaseSession(null);
     setState({
       user: null,
       session: null,

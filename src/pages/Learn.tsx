@@ -129,7 +129,7 @@ export default function Learn() {
                                                     ? 'bg-gray-100 text-gray-400 dark:bg-gray-800'
                                                     : 'bg-primary/10 text-primary'
                                             }`}>
-                                            {step.completed ? <CheckCircle2 className="w-5 h-5" /> : isLocked ? <Lock className="w-4 h-4" /> : <PlayCircle className="w-5 h-5" />}
+                                            {step.completed ? <CheckCircle2 className="w-5 h-5 text-secondary" /> : isLocked ? <Lock className="w-4 h-4" /> : <PlayCircle className="w-5 h-5" />}
                                         </div>
 
                                         <div className="flex-1">

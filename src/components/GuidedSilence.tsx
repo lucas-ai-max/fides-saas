@@ -61,12 +61,12 @@ export function GuidedSilence({ open, onOpenChange }: GuidedSilenceProps) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md bg-[#F0F8FF] dark:bg-slate-950 border-0 shadow-2xl overflow-hidden [&>button]:hidden">
+            <DialogContent className="sm:max-w-md bg-background border border-border shadow-2xl overflow-hidden [&>button]:hidden">
                 {/* Close Button Override */}
                 <div className="absolute right-4 top-4 z-50">
                     <DialogClose asChild>
-                        <button className="p-2 bg-black/5 hover:bg-black/10 rounded-full transition-colors">
-                            <X className="w-4 h-4 text-gray-500" />
+                        <button className="p-2 bg-muted hover:bg-muted/80 rounded-full transition-colors">
+                            <X className="w-4 h-4 text-muted-foreground" />
                         </button>
                     </DialogClose>
                 </div>
@@ -78,7 +78,7 @@ export function GuidedSilence({ open, onOpenChange }: GuidedSilenceProps) {
                 <div className="flex flex-col items-center justify-center py-10 relative">
 
                     {/* Background Ambient Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-blue-50/0 via-blue-100/30 to-blue-200/30 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-primary/20 pointer-events-none" />
 
                     {/* Main Content */}
                     <div className="z-10 text-center w-full max-w-xs space-y-8">
@@ -107,11 +107,11 @@ export function GuidedSilence({ open, onOpenChange }: GuidedSilenceProps) {
                         {/* Timer Display */}
                         <div className={`relative flex items-center justify-center transition-all duration-700 ${isActive ? "scale-110" : "scale-100"}`}>
                             {/* Rings */}
-                            <div className={`absolute inset-0 rounded-full border-4 border-sky-100 ${isActive ? "animate-ping opacity-20" : "opacity-0"}`} />
+                            <div className={`absolute inset-0 rounded-full border-4 border-primary/20 ${isActive ? "animate-ping opacity-20" : "opacity-0"}`} />
                             <div className="absolute inset-0 rounded-full border-4 border-white shadow-sm" />
 
-                            <div className="w-48 h-48 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center relative z-10 border border-sky-50 shadow-inner">
-                                <span className="text-5xl font-light tabular-nums text-sky-900 tracking-tight">
+                            <div className="w-48 h-48 rounded-full bg-card/60 backdrop-blur-sm flex items-center justify-center relative z-10 border border-border shadow-inner">
+                                <span className="text-5xl font-light tabular-nums text-foreground tracking-tight">
                                     {formatTime(timeLeft)}
                                 </span>
                             </div>
@@ -128,8 +128,8 @@ export function GuidedSilence({ open, onOpenChange }: GuidedSilenceProps) {
                                                     key={min}
                                                     onClick={() => setDuration(min as 1 | 3 | 5)}
                                                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${duration === min
-                                                        ? "bg-sky-200 text-sky-900 shadow-sm"
-                                                        : "text-sky-600 hover:bg-sky-100"
+                                                        ? "bg-primary/20 text-foreground shadow-sm"
+                                                        : "text-primary hover:bg-primary/10"
                                                         }`}
                                                 >
                                                     {min} min
@@ -142,7 +142,7 @@ export function GuidedSilence({ open, onOpenChange }: GuidedSilenceProps) {
                                         {!isActive ? (
                                             <Button
                                                 size="lg"
-                                                className="rounded-full w-16 h-16 bg-sky-600 hover:bg-sky-700 shadow-lg shadow-sky-200 hover:scale-105 transition-all"
+                                                className="rounded-full w-16 h-16 bg-primary hover:opacity-90 shadow-lg shadow-primary/20 hover:scale-105 transition-all text-primary-foreground"
                                                 onClick={handleStart}
                                             >
                                                 <Play className="w-6 h-6 fill-current ml-1" />
@@ -151,7 +151,7 @@ export function GuidedSilence({ open, onOpenChange }: GuidedSilenceProps) {
                                             <Button
                                                 size="lg"
                                                 variant="secondary"
-                                                className="rounded-full w-16 h-16 bg-white hover:bg-gray-50 text-sky-900 border border-sky-100 shadow-lg hover:scale-105 transition-all"
+                                                className="rounded-full w-16 h-16 bg-card hover:bg-muted text-foreground border border-border shadow-lg hover:scale-105 transition-all"
                                                 onClick={handlePause}
                                             >
                                                 <Pause className="w-6 h-6 fill-current" />

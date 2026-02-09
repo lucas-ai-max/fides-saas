@@ -40,19 +40,27 @@ const Home = () => {
     return "Boa noite";
   });
 
-  // Nome: Auth (Supabase) → localStorage (fides_session do login) → "Fiel"
+  // Nome: useAuth (Supabase/API) → display_name ou full_name ou email → session em localStorage → "Fiel"
   const getNomeFromStorage = (): string | null => {
     try {
       const raw = localStorage.getItem("fides_session");
       if (!raw) return null;
-      const data = JSON.parse(raw) as { user?: { full_name?: string; email?: string } };
+      const data = JSON.parse(raw) as {
+        user?: { display_name?: string; full_name?: string; email?: string };
+      };
       const u = data?.user;
-      return u?.full_name ?? (u?.email ? u.email.split("@")[0] : null) ?? null;
+      return (
+        u?.display_name ??
+        u?.full_name ??
+        (u?.email ? u.email.split("@")[0] : null) ??
+        null
+      );
     } catch {
       return null;
     }
   };
   const userName =
+    user?.display_name ??
     user?.full_name ??
     (user?.email ? user.email.split("@")[0] : null) ??
     getNomeFromStorage() ??
@@ -146,16 +154,16 @@ const Home = () => {
 
   return (
     <div className="min-h-screen pb-24 bg-background relative transition-colors duration-300">
-      <div className="absolute top-0 left-0 right-0 h-[320px] bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 dark:from-primary-900/80 dark:via-primary-800/60 dark:to-background pointer-events-none transition-colors duration-300" />
+      <div className="absolute top-0 left-0 right-0 h-[320px] bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 dark:from-background dark:via-background/95 dark:to-transparent pointer-events-none transition-colors duration-300" />
       {/* Header: ícones à esquerda (sparkle + saudação + 🙏), direita (chat, sino, perfil G) */}
       <header
         className={`sticky top-0 z-20 px-6 py-4 flex items-center justify-between transition-all duration-300 ${isScrolled
-          ? "bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-white/10 dark:border-white/5 py-3"
+          ? "bg-background/80 backdrop-blur-md shadow-sm border-b border-border py-3"
           : "bg-transparent"
           }`}
       >
         <div className="flex items-center gap-2">
-          <Sparkles className={`w-5 h-5 flex-shrink-0 transition-colors ${isScrolled ? "text-primary-600 dark:text-primary-400" : "text-white/90"}`} />
+          <Sparkles className={`w-5 h-5 flex-shrink-0 transition-colors ${isScrolled ? "text-foreground" : "text-white/90"}`} />
           <p className={`font-body text-xl font-medium tracking-tight transition-colors ${isScrolled ? "text-foreground" : "text-white"}`}>
             {greeting}, {userName}! 🙏
           </p>
@@ -173,7 +181,7 @@ const Home = () => {
               key={item.label}
               onClick={() => navigate(item.path)}
               className={`font-medium text-sm transition-colors ${isScrolled
-                ? "text-muted-foreground hover:text-primary-600 dark:hover:text-primary-400"
+                ? "text-foreground hover:text-primary"
                 : "text-white/80 hover:text-white"
                 }`}
             >
@@ -186,7 +194,7 @@ const Home = () => {
             type="button"
             onClick={() => navigate("/catechist")}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isScrolled
-              ? "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
+              ? "text-foreground hover:bg-muted"
               : "text-white/80 hover:bg-white/10"
               }`}
           >
@@ -195,7 +203,7 @@ const Home = () => {
           <button
             type="button"
             className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isScrolled
-              ? "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
+              ? "text-foreground hover:bg-muted"
               : "text-white/80 hover:bg-white/10"
               }`}
           >
@@ -215,27 +223,27 @@ const Home = () => {
         </div>
       </header>
 
-      <main className="px-6 pt-2 space-y-6 max-w-7xl mx-auto relative z-10">
+      <main className="p-4 space-y-4 md:p-8 md:space-y-8 max-w-7xl mx-auto relative z-10">
         {/* 1️⃣ HERO PRINCIPAL - céu/nuvens (back1) + texto à esquerda + Jesus à direita */}
         <Card
-          className="overflow-hidden rounded-3xl border border-primary-200/50 dark:border-primary-800/50 shadow-lg relative min-h-[240px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[400px] bg-[#E0F2FE] dark:bg-[#1e293b]"
+          className="overflow-hidden rounded-3xl border border-primary/20 shadow-lg relative min-h-[240px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[400px] bg-background-soft"
         >
           <div
             className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat pointer-events-none"
             style={{ backgroundImage: "url('/back1.png')" }}
           />
-          <div className="relative z-10 p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="relative z-10 px-4 py-12 md:px-10 md:py-16 lg:px-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 text-center sm:text-left">
             {/* Esquerda: título, subtítulo, CTA */}
-            <div className="flex-1 space-y-3 sm:space-y-4 max-w-md">
+            <div className="flex-1 space-y-3 sm:space-y-4 max-w-md mx-auto sm:mx-0">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-semibold text-primary leading-tight">
                 Comece seu momento com Deus
               </h1>
-              <p className="text-muted-foreground font-body text-base sm:text-lg">
+              <p className="text-muted-foreground font-body text-sm sm:text-base md:text-lg leading-relaxed">
                 Um passo simples para hoje
               </p>
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-gradient-to-r from-accent-300 to-accent-500 hover:from-accent-400 hover:to-accent-600 text-accent-foreground dark:text-primary font-semibold text-base h-14 sm:h-16 px-8 sm:px-10 rounded-xl shadow-md border border-accent-400/50 transition-all duration-300"
+                className="w-full sm:w-auto mx-auto sm:mx-0 bg-gradient-to-r from-accent-300 to-accent-500 hover:from-accent-400 hover:to-accent-600 text-accent-foreground dark:text-primary font-semibold text-base h-14 sm:h-16 px-8 sm:px-10 rounded-xl shadow-md border border-accent-400/50 transition-all duration-300"
                 onClick={() => navigate("/prayers")}
               >
                 <span className="mr-2">🙏</span>
@@ -253,8 +261,8 @@ const Home = () => {
                 <span className="text-lg">❤️‍🩹</span>
               </div>
               <div className="text-left">
-                <span className="block text-sm font-bold text-gray-700">Estou mal hoje</span>
-                <span className="block text-[10px] text-gray-500">Receber apoio</span>
+                <span className="block text-sm font-bold text-foreground">Estou mal hoje</span>
+                <span className="block text-[10px] text-muted-foreground">Receber apoio</span>
               </div>
             </button>
           </ImDownDrawer>
@@ -267,8 +275,8 @@ const Home = () => {
               <span className="text-lg">🤫</span>
             </div>
             <div className="text-left">
-              <span className="block text-sm font-bold text-gray-700">Silêncio</span>
-              <span className="block text-[10px] text-gray-500">Timer guiado</span>
+              <span className="block text-sm font-bold text-foreground">Silêncio</span>
+              <span className="block text-[10px] text-muted-foreground">Timer guiado</span>
             </div>
           </button>
         </div>
@@ -281,7 +289,7 @@ const Home = () => {
           style={{ backgroundImage: "url('/back2.png')" }}
           onClick={() => navigate("/liturgy")}
         >
-          <div className="p-5">
+          <div className="p-4 md:p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-heading font-semibold text-primary">
                 Evangelho de hoje
@@ -299,7 +307,7 @@ const Home = () => {
             {liturgiaPreview.loading ? (
               <LoadingSpinner size="sm" />
             ) : (
-              <p className="font-body text-text-primary dark:text-text-primary text-base line-clamp-3 leading-relaxed mb-4">
+              <p className="font-body text-foreground text-base line-clamp-3 leading-relaxed mb-4">
                 {liturgiaPreview.texto}
               </p>
             )}
@@ -320,15 +328,15 @@ const Home = () => {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Cor Litúrgica
                 </p>
-                <p className="text-sm font-medium text-foreground mt-0.5">
+                <p className="text-sm font-medium text-foreground mt-0.5 leading-relaxed">
                   {COR_LITURGICA_SIGNIFICADO[liturgiaPreview.cor].label}
                 </p>
-                <p className="text-xs text-muted-foreground font-body mt-0.5">
+                <p className="text-xs text-muted-foreground font-body mt-0.5 leading-relaxed">
                   {COR_LITURGICA_SIGNIFICADO[liturgiaPreview.cor].explicacao}
                 </p>
               </div>
             )}
-            <p className="mt-3 text-xs text-muted-foreground font-body flex items-start gap-1.5">
+            <p className="mt-3 text-xs text-muted-foreground font-body flex items-start gap-1.5 leading-relaxed">
               <Sparkles className="w-3.5 h-3.5 text-primary/70 flex-shrink-0 mt-0.5" />
               A Liturgia é a leitura bíblica rezada todos os dias pela Igreja.
             </p>
@@ -347,7 +355,7 @@ const Home = () => {
           style={{ backgroundImage: "url('/back-saint-light.png')" }} // Hypothetical background, using subtle variation or just color
           onClick={() => navigate("/santo")}
         >
-          <div className="p-6 flex flex-col md:flex-row gap-6 items-center">
+          <div className="p-4 md:p-6 flex flex-col md:flex-row gap-6 items-center">
             {/* Esquerda: Avatar + Nome */}
             <div className="flex-shrink-0 relative">
               <div className="w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
@@ -365,13 +373,13 @@ const Home = () => {
 
             {/* Meio: Informações */}
             <div className="flex-1 text-center md:text-left space-y-1">
-              <p className="text-sm font-semibold text-text-primary/70 flex items-center justify-center md:justify-start gap-1">
+              <p className="text-sm font-semibold text-muted-foreground flex items-center justify-center md:justify-start gap-1">
                 Santo de hoje 🕊️
               </p>
-              <h3 className="text-2xl font-heading font-bold text-primary-900 dark:text-primary-100">
+              <h3 className="text-2xl font-heading font-bold text-foreground">
                 {santoPreview.nome || "São Martinho"}
               </h3>
-              <p className="text-muted-foreground">{santoPreview.titulo || "Um exemplo de fé para se inspirar"}</p>
+              <p className="text-muted-foreground leading-relaxed">{santoPreview.titulo || "Um exemplo de fé para se inspirar"}</p>
 
               <Button
                 size="sm"
@@ -390,13 +398,13 @@ const Home = () => {
               <div className="flex items-start gap-3 mb-3 pb-3 border-b border-black/5">
                 <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-primary-900 dark:text-primary-100 leading-tight">
+                  <p className="text-sm font-semibold text-foreground leading-relaxed">
                     A Liturgia é a leitura <span className="font-normal text-muted-foreground">bíblica rezada todos os dias pela Igreja.</span>
                   </p>
                   <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground italic">
+              <p className="text-sm text-muted-foreground italic leading-relaxed">
                 <span className="text-xl text-primary/40 mr-1">"</span>
                 Eu era soldado de Cristo: não me é lícito lutar.
               </p>

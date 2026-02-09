@@ -39,7 +39,7 @@ const Login = () => {
           <Cross className="w-20 h-20 text-liturgical-gold" strokeWidth={1.5} />
         </div>
         <div className="space-y-2 animate-slide-up">
-          <h1 className="text-3xl font-heading font-semibold text-primary">
+          <h1 className="text-2xl md:text-3xl font-heading font-semibold text-primary">
             Entrar no Fides
           </h1>
           <p className="text-muted-foreground font-body">

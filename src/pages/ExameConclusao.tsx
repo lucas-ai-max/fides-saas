@@ -91,9 +91,9 @@ const ExameConclusao = () => {
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto">
-            <Check className="w-8 h-8 text-white" />
+            <Check className="w-8 h-8 text-secondary" />
           </div>
-          <h1 className="font-serif text-3xl font-semibold text-primary">Exame Concluído</h1>
+          <h1 className="font-serif text-2xl md:text-3xl font-semibold text-primary">Exame Concluído</h1>
           <p className="text-secondary text-base">Prepare-se para a Confissão</p>
         </div>
 
@@ -163,7 +163,7 @@ const ExameConclusao = () => {
           <div className="bg-green-50 border border-green-200 rounded-xl p-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <CheckCircle className="w-8 h-8 text-secondary" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 Consciência em Paz

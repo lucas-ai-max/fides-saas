@@ -56,7 +56,7 @@ export function MyPath() {
     return (
         <Card className="p-0 bg-white/95 dark:bg-card/95 shadow-md border-0 rounded-3xl overflow-hidden">
             {/* Header com gradiente suave */}
-            <div className="px-6 py-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b border-blue-100/20">
+            <div className="px-4 py-4 md:px-6 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b border-blue-100/20">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-lg font-heading font-semibold text-primary/90">
@@ -77,15 +77,15 @@ export function MyPath() {
                 </div>
             </div>
 
-            <div className="p-5 space-y-6">
+            <div className="p-4 md:p-5 space-y-4 md:space-y-6">
                 {/* Cards Principais (3 Colunas) */}
                 <div className="grid grid-cols-3 gap-3">
                     {/* Dias Caminhando */}
                     <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30 text-center">
-                        <span className="text-2xl font-bold text-amber-600 dark:text-amber-500 mb-0.5">
+                        <span className="text-2xl font-bold text-foreground mb-0.5">
                             {stats.daysWalking}d
                         </span>
-                        <p className="text-[10px] uppercase tracking-wide font-medium text-amber-800/60 dark:text-amber-400/60 leading-tight">
+                        <p className="text-[10px] uppercase tracking-wide font-medium text-foreground leading-tight">
                             Caminhando
                         </p>
                         <p className="text-[9px] text-muted-foreground mt-1">
@@ -95,10 +95,10 @@ export function MyPath() {
 
                     {/* Momentos Oração */}
                     <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-pink-50/60 dark:bg-pink-950/20 border border-pink-100/50 dark:border-pink-900/30 text-center">
-                        <span className="text-2xl font-bold text-pink-600 dark:text-pink-500 mb-0.5">
+                        <span className="text-2xl font-bold text-foreground mb-0.5">
                             {stats.prayerMoments}
                         </span>
-                        <p className="text-[10px] uppercase tracking-wide font-medium text-pink-800/60 dark:text-pink-400/60 leading-tight">
+                        <p className="text-[10px] uppercase tracking-wide font-medium text-foreground leading-tight">
                             Orações
                         </p>
                         <p className="text-[9px] text-muted-foreground mt-1">
@@ -108,10 +108,10 @@ export function MyPath() {
 
                     {/* Liturgia Lida */}
                     <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 text-center">
-                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-500 mb-0.5">
-                            {stats.liturgyReads}<span className="text-sm font-normal text-blue-400">/7</span>
+                        <span className="text-2xl font-bold text-foreground mb-0.5">
+                            {stats.liturgyReads}<span className="text-sm font-normal text-muted-foreground">/7</span>
                         </span>
-                        <p className="text-[10px] uppercase tracking-wide font-medium text-blue-800/60 dark:text-blue-400/60 leading-tight">
+                        <p className="text-[10px] uppercase tracking-wide font-medium text-foreground leading-tight">
                             Liturgias
                         </p>
                         <p className="text-[9px] text-muted-foreground mt-1">

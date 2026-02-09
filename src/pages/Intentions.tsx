@@ -155,13 +155,13 @@ export default function Intentions() {
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => setNewType('pedido')}
-                                            className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-all ${newType === 'pedido' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-transparent border-input'}`}
+                                            className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-all ${newType === 'pedido' ? 'bg-primary/10 border-primary/20 text-muted-foreground' : 'bg-transparent border-input text-foreground'}`}
                                         >
                                             🙏 Pedido
                                         </button>
                                         <button
                                             onClick={() => setNewType('agradecimento')}
-                                            className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-all ${newType === 'agradecimento' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-transparent border-input'}`}
+                                            className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-all ${newType === 'agradecimento' ? 'bg-accent/10 border-accent/30 text-muted-foreground' : 'bg-transparent border-input text-foreground'}`}
                                         >
                                             ✨ Agradecimento
                                         </button>
@@ -193,7 +193,7 @@ export default function Intentions() {
                         <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
                             <span className="text-4xl">🙏</span>
                         </div>
-                        <h3 className="text-xl font-heading font-semibold text-gray-800 mb-2">Comece suas intenções</h3>
+                        <h3 className="text-xl font-heading font-semibold text-foreground mb-2">Comece suas intenções</h3>
                         <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
                             Registre pedidos e agradecimentos para organizar sua vida de oração. Deus ouve cada detalhe.
                         </p>
@@ -297,7 +297,7 @@ export default function Intentions() {
                                     </p>
                                 </div>
                                 <div className="bg-white dark:bg-card p-2 rounded-full shadow-sm">
-                                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                    <CheckCircle2 className="w-5 h-5 text-secondary" />
                                 </div>
                             </div>
                         ))}

@@ -28,7 +28,7 @@ export function BiblicalText({
         return (
           <span
             key={index}
-            className="text-[0.6em] font-bold text-primary/60 align-top mr-1 ml-0.5 select-none"
+            className="text-[0.6em] font-bold text-muted-foreground align-top mr-1 ml-0.5 select-none"
             style={{ position: 'relative', top: '-0.2em' }}
           >
             {part}
@@ -44,7 +44,7 @@ export function BiblicalText({
 
   return (
     <p
-      className={`font-serif texto-biblico whitespace-pre-line ${className}`}
+      className={`font-serif texto-biblico whitespace-pre-line text-foreground ${className}`}
       style={{ fontSize, lineHeight }}
     >
       {formattedText}

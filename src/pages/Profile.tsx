@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,19 +31,27 @@ const Profile = () => {
   const { getPrayerCount } = usePrayerHistory();
 
   const userName =
+    user?.display_name ??
     user?.full_name ??
     (user?.email ? user.email.split("@")[0] : null) ??
     "Fiel";
 
   const oracoesFeitas = getPrayerCount();
 
+  const [loggingOut, setLoggingOut] = useState(false);
+
   const favoritePrayers = useMemo(() => {
     return prayers.filter((p) => favorites.includes(p.id));
   }, [prayers, favorites]);
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
+    setLoggingOut(true);
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -88,7 +96,7 @@ const Profile = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl bg-accent-50 dark:bg-accent-950/30 border border-accent-200/50 dark:border-accent-800/30 p-4 text-center">
                 <div className="flex justify-center mb-2">
-                  <Flame className="w-8 h-8 text-accent-600 dark:text-accent-400" />
+                  <Flame className="w-8 h-8 text-secondary" />
                 </div>
                 <p className="text-2xl font-bold text-accent-700 dark:text-accent-400">
                   {STREAK_DIAS}
@@ -153,15 +161,25 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* 4. Logout */}
+        {/* 4. Sair da conta */}
         <Button
           variant="outline"
           size="lg"
           className="w-full border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive font-medium rounded-xl"
           onClick={handleLogout}
+          disabled={loggingOut}
         >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sair da conta
+          {loggingOut ? (
+            <>
+              <span className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              Saindo...
+            </>
+          ) : (
+            <>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair da conta
+            </>
+          )}
         </Button>
       </div>
 

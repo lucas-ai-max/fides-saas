@@ -4,37 +4,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* FIDES DESIGN SYSTEM - Enhanced with Light/Dark Theme Support */
+/* FIDES DESIGN SYSTEM - Light/Dark com contraste WCAG AA
+   - --foreground: texto principal (claro: #0f172a | escuro: #f8fafc)
+   - --muted-foreground: texto secundário, contraste ≥4.5:1 para leitura em mobile
+ */
 
 @layer base {
   /* ===========================
      LIGHT THEME (Default)
      =========================== */
   :root {
-    /* Primary - Azul Mariano */
-    --primary: 221 83% 53%;
-    --primary-light: 213 94% 68%;
+    /* Primary - Azul Mariano Profundo (#1e40af, #3b82f6, #172554) */
+    --primary: 224 71% 40%;
+    --primary-light: 217 91% 60%;
+    --primary-dark: 224 58% 21%;
     --primary-foreground: 0 0% 100%;
     
-    /* Accent - Dourado */
+    /* Secondary / Accent - Dourado Sutil (#d97706, #fcd34d) */
     --accent: 32 95% 44%;
-    --accent-light: 43 96% 56%;
+    --accent-light: 43 96% 65%;
     --accent-dark: 26 90% 37%;
     --accent-foreground: 0 0% 100%;
     
-    /* Backgrounds - Clean white system */
-    --background: 0 0% 100%;
-    --background-secondary: 0 0% 98%;
-    --background-tertiary: 0 0% 96%;
-    --background-elevated: 0 0% 100%;
-    --background-soft: 0 0% 97%;
-    --background-primary: 0 0% 100%;
+    /* Backgrounds - Off-white suave quase azulado (#f8fafc) */
+    --background: 210 40% 98%;
+    --background-secondary: 210 40% 96%;
+    --background-tertiary: 214 32% 94%;
+    --background-elevated: 210 40% 98%;
+    --background-soft: 210 40% 97%;
+    --background-primary: 210 40% 98%;
     
-    /* Text - High contrast */
+    /* Text - Alto contraste (WCAG AA). Principal: cinza quase preto #0f172a */
     --text-primary: 222 47% 11%;
-    --text-secondary: 215 16% 47%;
-    --text-tertiary: 215 14% 59%;
-    --text-disabled: 218 11% 65%;
+    --text-secondary: 215 25% 40%;
+    --text-tertiary: 215 20% 45%;
+    --text-disabled: 218 11% 55%;
     --text-inverse: 0 0% 100%;
     
     /* Borders */
@@ -69,24 +73,24 @@
     --gray-text: 215 16% 47%;
     --gray-disabled: 218 11% 65%;
     
-    /* Shadcn compatibility */
-    --card: 0 0% 100%;
+    /* Shadcn compatibility - apontados para a paleta mariana/dourado. Foreground = texto principal (#0f172a) */
+    --card: 210 40% 98%;
     --foreground: 222 47% 11%;
     --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
+    --popover: 210 40% 98%;
     --popover-foreground: 222 47% 11%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 32 95% 44%;
+    --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 25% 40%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --ring: 224 71% 40%;
     --radius: 16px;
     
     /* Charts */
-    --chart-1: 221 83% 53%;
+    --chart-1: 224 71% 40%;
     --chart-2: 32 95% 44%;
     --chart-3: 158 64% 52%;
     --chart-4: 38 92% 50%;
@@ -110,16 +114,18 @@
      DARK THEME
      =========================== */
   .dark {
+    /* Primary - Azul Mariano (versão dark) */
     --primary: 217 91% 60%;
     --primary-light: 213 94% 68%;
-    --primary-foreground: 222 47% 11%;
+    --primary-dark: 224 58% 21%;
+    --primary-foreground: 210 40% 98%;
     
     --accent: 43 96% 56%;
     --accent-light: 48 97% 77%;
     --accent-dark: 32 95% 44%;
     --accent-foreground: 222 47% 11%;
     
-    /* Backgrounds - Deep blue-tinted dark */
+    /* Backgrounds - Azul noturno profundo (#0f172a) */
     --background: 222 47% 11%;
     --background-secondary: 217 33% 17%;
     --background-tertiary: 215 25% 27%;
@@ -127,11 +133,11 @@
     --background-soft: 220 26% 14%;
     --background-primary: 222 47% 11%;
     
-    /* Text - Inverted */
+    /* Text - Modo escuro: branco suave #f8fafc, muted com contraste WCAG */
     --text-primary: 210 40% 98%;
-    --text-secondary: 217 19% 78%;
-    --text-tertiary: 218 11% 65%;
-    --text-disabled: 215 14% 59%;
+    --text-secondary: 215 20% 72%;
+    --text-tertiary: 215 18% 65%;
+    --text-disabled: 215 14% 55%;
     --text-inverse: 222 47% 11%;
     
     /* Borders */
@@ -164,16 +170,16 @@
     --gray-text: 217 19% 78%;
     --gray-disabled: 215 14% 59%;
     
-    /* Shadcn compatibility */
+    /* Shadcn compatibility - dark. Foreground = branco suave #f8fafc */
     --card: 217 33% 17%;
     --foreground: 210 40% 98%;
     --card-foreground: 210 40% 98%;
     --popover: 217 33% 17%;
     --popover-foreground: 210 40% 98%;
-    --secondary: 215 25% 27%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 32 95% 44%;
+    --secondary-foreground: 0 0% 100%;
     --muted: 215 25% 27%;
-    --muted-foreground: 217 19% 78%;
+    --muted-foreground: 215 20% 72%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --input: 215 25% 27%;
@@ -270,12 +276,12 @@
     font-family: 'Inter', sans-serif;
   }
   
-  /* Texto Bíblico - Otimizado para Leitura */
+  /* Texto Bíblico - Cor via --foreground: escuro no claro, claro no .dark (210 40% 98%) */
   .texto-biblico {
     font-family: 'Literata', Georgia, serif;
     font-size: 18px;
     line-height: 1.9;
-    color: hsl(222 47% 11%);
+    color: hsl(var(--foreground));
     font-weight: 400;
     letter-spacing: 0.01em;
     -webkit-font-smoothing: antialiased;
@@ -303,13 +309,13 @@
   .texto-biblico em,
   .texto-biblico .citacao {
     font-style: italic;
-    color: hsl(217 91% 60%);
+    color: hsl(var(--primary));
   }
   
   /* Palavras com destaque */
   .texto-biblico strong {
     font-weight: 600;
-    color: hsl(38 92% 50%);
+    color: hsl(var(--accent));
   }
   
   /* Espaçamento entre parágrafos */
@@ -327,7 +333,7 @@
   
   .texto-biblico .numero-versiculo {
     font-size: 0.75em;
-    color: hsl(214 32% 64%);
+    color: hsl(var(--muted-foreground));
     font-weight: 600;
     vertical-align: super;
     margin-right: 0.3em;

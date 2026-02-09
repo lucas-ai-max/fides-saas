@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Prayer, PrayerHistory } from '@/data/prayers';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const FAVORITES_KEY = 'fides_favorite_prayers';
 const HISTORY_KEY = 'fides_prayer_history';
@@ -61,29 +62,70 @@ export const usePrayers = () => {
   return { prayers, loading, error };
 };
 
+/** Favoritos: Supabase user_favorites quando autenticado, senão localStorage. */
 export const useFavorites = () => {
+  const { isAuthenticated } = useAuth();
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
 
+  // Buscar favoritos: Supabase (autenticado) ou localStorage (anon)
   useEffect(() => {
-    const stored = localStorage.getItem(FAVORITES_KEY);
-    if (stored) {
-      setFavorites(JSON.parse(stored));
+    let cancelled = false;
+
+    if (isAuthenticated) {
+      setLoadingFavorites(true);
+      supabase
+        .from('user_favorites')
+        .select('prayer_id')
+        .then(({ data, error }) => {
+          if (cancelled) return;
+          if (error) {
+            setFavorites([]);
+            setLoadingFavorites(false);
+            return;
+          }
+          setFavorites((data ?? []).map((r) => r.prayer_id));
+          setLoadingFavorites(false);
+        });
+    } else {
+      const stored = localStorage.getItem(FAVORITES_KEY);
+      setFavorites(stored ? JSON.parse(stored) : []);
+      setLoadingFavorites(false);
     }
-  }, []);
 
-  const toggleFavorite = (prayerId: string) => {
-    setFavorites((prev) => {
-      const newFavorites = prev.includes(prayerId)
-        ? prev.filter((id) => id !== prayerId)
-        : [...prev, prayerId];
-      localStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
-      return newFavorites;
-    });
-  };
+    return () => { cancelled = true; };
+  }, [isAuthenticated]);
 
-  const isFavorite = (prayerId: string) => favorites.includes(prayerId);
+  const toggleFavorite = useCallback(
+    async (prayerId: string) => {
+      if (isAuthenticated) {
+        const isFav = favorites.includes(prayerId);
+        if (isFav) {
+          await supabase.from('user_favorites').delete().eq('prayer_id', prayerId);
+          setFavorites((prev) => prev.filter((id) => id !== prayerId));
+        } else {
+          await supabase.from('user_favorites').insert({ prayer_id: prayerId });
+          setFavorites((prev) => [...prev, prayerId]);
+        }
+      } else {
+        setFavorites((prev) => {
+          const newFavorites = prev.includes(prayerId)
+            ? prev.filter((id) => id !== prayerId)
+            : [...prev, prayerId];
+          localStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
+          return newFavorites;
+        });
+      }
+    },
+    [isAuthenticated, favorites]
+  );
 
-  return { favorites, toggleFavorite, isFavorite };
+  const isFavorite = useCallback(
+    (prayerId: string) => favorites.includes(prayerId),
+    [favorites]
+  );
+
+  return { favorites, toggleFavorite, isFavorite, loadingFavorites };
 };
 
 export const usePrayerHistory = () => {

@@ -47,6 +47,13 @@ const Catechist = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Ao abrir o teclado no mobile, ajusta viewport (dvh) e mantém último balão visível
+  const handleInputFocus = () => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => scrollToBottom());
+    });
+  };
+
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
@@ -192,7 +199,7 @@ const Catechist = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-background text-foreground font-sans selection:bg-primary/30 overflow-hidden transition-colors duration-300">
+    <div className="flex h-screen min-h-[100dvh] max-h-[100dvh] bg-background text-foreground font-sans selection:bg-primary/30 overflow-hidden transition-colors duration-300" style={{ height: '100dvh' }}>
 
       {/* Sidebar Overlay (Mobile) */}
       {isSidebarOpen && (
@@ -204,7 +211,7 @@ const Catechist = () => {
 
       {/* Sidebar */}
       <aside className={`
-        fixed md:relative z-50 h-full w-[280px] bg-card border-r border-border flex flex-col transition-transform duration-300 ease-in-out
+        fixed md:relative z-50 h-[100dvh] md:h-full w-[280px] bg-card border-r border-border flex flex-col transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="p-4">
@@ -270,7 +277,7 @@ const Catechist = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full relative w-full bg-background">
+      <div className="flex-1 flex flex-col min-h-0 relative w-full bg-background">
 
         {/* Header (Mobile Toggle) */}
         <header className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-4 md:hidden bg-gradient-to-b from-background to-transparent">
@@ -284,8 +291,8 @@ const Catechist = () => {
           <div className="w-8" /> {/* Spacer */}
         </header>
 
-        {/* Messages Area */}
-        <main className="flex-1 overflow-y-auto pt-[60px] pb-[160px]">
+        {/* Messages Area - ocupa o espaço entre header e input; scroll suave com teclado aberto */}
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-[60px] pb-[180px] md:pb-[160px] overscroll-contain">
           {messages.length === 0 ? (
             // Welcome Screen
             <div className="min-h-full flex flex-col items-center justify-center px-4 animate-in fade-in duration-700">
@@ -388,6 +395,7 @@ const Catechist = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyPress}
+                  onFocus={handleInputFocus}
                   placeholder="Escreva sua dúvida ou aquilo que deseja entender..."
                   disabled={isLoading}
                   className="w-full bg-transparent text-foreground placeholder-muted-foreground px-6 py-4 pr-14 focus:outline-none resize-none max-h-32 disabled:opacity-50 text-[15px] leading-relaxed custom-scrollbar"

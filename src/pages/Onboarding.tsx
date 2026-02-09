@@ -43,7 +43,7 @@ const Onboarding = () => {
 
         {/* Content */}
         <div className="space-y-4 animate-slide-up">
-          <h1 className="text-4xl font-heading font-semibold text-primary leading-tight">
+          <h1 className="text-2xl md:text-4xl font-heading font-semibold text-primary leading-tight">
             {steps[currentStep].title}
           </h1>
           <p className="text-lg text-muted-foreground font-body leading-relaxed">

@@ -5,6 +5,8 @@ export type AuthUser = {
   email?: string;
   created_at: string;
   full_name?: string;
+  /** Nome exibido (ex.: user_metadata do Supabase) */
+  display_name?: string;
 };
 
 export type Session = {

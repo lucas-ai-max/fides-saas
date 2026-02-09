@@ -78,7 +78,7 @@ export function ImDownDrawer({ children }: { children: React.ReactNode }) {
 
                     {/* Header with Close */}
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="font-heading font-semibold text-xl text-gray-800 dark:text-gray-100">
+                        <h2 className="font-heading font-semibold text-xl text-foreground">
                             {step === "select" && "Como você está?"}
                             {step === "breathe" && "Respire fundo..."}
                             {step === "prayer" && "Uma palavra para você"}
@@ -134,8 +134,8 @@ export function ImDownDrawer({ children }: { children: React.ReactNode }) {
                             <div className="space-y-6 animate-in fade-in slide-in-from-right-8">
 
                                 {/* Verse Card */}
-                                <div className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-3xl border border-amber-100 dark:border-amber-900/50">
-                                    <p className="font-serif italic text-amber-900 dark:text-amber-100 text-lg leading-relaxed text-center">
+                                <div className="bg-accent/10 dark:bg-accent/10 p-6 rounded-3xl border border-accent/20">
+                                    <p className="font-serif italic text-foreground text-lg leading-relaxed text-center">
                                         "{selectedFeeling.verse}"
                                     </p>
                                 </div>
@@ -145,8 +145,8 @@ export function ImDownDrawer({ children }: { children: React.ReactNode }) {
                                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
                                         <Heart className="w-4 h-4" /> Oração sugerida
                                     </h3>
-                                    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl">
-                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                    <div className="p-4 bg-muted rounded-2xl">
+                                        <p className="text-foreground leading-relaxed">
                                             {selectedFeeling.prayer}
                                         </p>
                                     </div>
@@ -232,12 +232,12 @@ function BreathingCircle({ onComplete }: { onComplete: () => void }) {
 
             {/* Label */}
             <div className="z-10 text-center">
-                <span className="text-xl font-medium text-blue-800 dark:text-blue-200 block mb-1">
+                <span className="text-xl font-medium text-foreground block mb-1">
                     {phase === "inhale" && "Inspire..."}
                     {phase === "hold" && "Segure..."}
                     {phase === "exhale" && "Expire..."}
                 </span>
-                <Wind className={`w-6 h-6 mx-auto text-blue-500 transition-opacity duration-500 ${phase === "hold" ? "opacity-0" : "opacity-100"}`} />
+                <Wind className={`w-6 h-6 mx-auto text-foreground transition-opacity duration-500 ${phase === "hold" ? "opacity-0" : "opacity-100"}`} />
             </div>
         </div>
     );

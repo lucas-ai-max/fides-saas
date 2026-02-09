@@ -24,13 +24,13 @@ export function BottomNav() {
           const ButtonContent = (
             <button
               onClick={item.path !== '/profile' ? () => navigate(item.path) : undefined}
-              className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[64px] ${isActive
-                ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950'
-                : 'text-text-tertiary hover:text-text-primary hover:bg-background-secondary dark:hover:bg-background-tertiary'
+              className={`flex flex-col items-center justify-center gap-1 min-h-[48px] min-w-[72px] px-4 py-3 rounded-xl transition-colors duration-300 touch-manipulation ${isActive
+                ? 'text-primary bg-primary-50 dark:bg-primary-950/50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
             >
-              <Icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} />
-              <span className={`text-xs font-medium ${isActive ? 'font-semibold' : ''}`}>
+              <Icon className={`w-6 h-6 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />
+              <span className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'font-semibold' : ''}`}>
                 {item.label}
               </span>
             </button>

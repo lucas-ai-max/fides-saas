@@ -133,7 +133,7 @@ const RealizarExame = () => {
         <div className="max-w-3xl mx-auto p-4 space-y-6 pb-32">
           {/* Seção do Mandamento */}
           <div className="text-center space-y-2">
-            <h2 className="font-serif text-3xl font-semibold text-primary">
+            <h2 className="font-serif text-2xl md:text-3xl font-semibold text-primary">
               {currentMandamento.numero > 0 ? `${currentMandamento.numero}º Mandamento` : 'Mandamentos da Igreja'}
             </h2>
             <p className="font-serif italic text-xl text-accent">
@@ -148,14 +148,14 @@ const RealizarExame = () => {
               {currentMandamento.questions.map((question, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <span className="text-secondary mt-1">•</span>
-                  <span className="text-[#2C2C2C] leading-relaxed">{question}</span>
+                  <span className="text-foreground leading-relaxed">{question}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* IA Auxiliadora */}
-          <div className={`bg-blue-50 border-2 border-blue-200 rounded-xl transition-all ${showAI ? 'p-0' : 'p-4'}`}>
+          <div className={`bg-primary/10 border-2 border-primary/20 rounded-xl transition-all ${showAI ? 'p-0' : 'p-4'}`}>
             {!showAI ? (
               <div className="flex items-start gap-3">
                 <span className="text-2xl">✝️</span>
@@ -173,7 +173,7 @@ const RealizarExame = () => {
             ) : (
               <div className="flex flex-col h-[400px]">
                 {/* Header do Chat */}
-                <div className="bg-blue-100 px-4 py-3 border-b border-blue-200 rounded-t-xl flex items-center justify-between">
+                <div className="bg-primary/10 px-4 py-3 border-b border-primary/20 rounded-t-xl flex items-center justify-between">
                   <div className="flex-1">
                     <h4 className="font-semibold text-primary">Auxiliador de Exame</h4>
                     <p className="text-xs text-secondary flex items-center gap-1">
@@ -186,14 +186,14 @@ const RealizarExame = () => {
                       setShowAI(false);
                       setAiMessages([]);
                     }}
-                    className="p-1 hover:bg-blue-200 rounded transition-colors"
+                    className="p-1 hover:bg-primary/20 rounded transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
                 {/* Mensagens */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-card">
                   <div className="bg-secondary-bg rounded-lg p-3">
                     <p className="text-sm text-secondary">
                       Olá! Estou aqui para ajudar você a entender melhor as perguntas do exame de
@@ -205,7 +205,7 @@ const RealizarExame = () => {
                       key={idx}
                       className={`rounded-lg p-3 max-w-[85%] ${
                         msg.role === 'user'
-                          ? 'bg-primary text-white ml-auto'
+                          ? 'bg-primary text-primary-foreground ml-auto'
                           : 'bg-secondary-bg text-secondary'
                       }`}
                     >
@@ -221,7 +221,7 @@ const RealizarExame = () => {
                 </div>
 
                 {/* Input */}
-                <div className="p-3 border-t border-blue-200 bg-white rounded-b-xl">
+                <div className="p-3 border-t border-primary/20 bg-card rounded-b-xl">
                   <div className="flex gap-2">
                     <Textarea
                       value={userInput}
